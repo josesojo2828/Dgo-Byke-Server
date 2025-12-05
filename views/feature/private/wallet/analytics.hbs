@@ -1,0 +1,44 @@
+{{> private/slide}}
+
+<div class="md:ml-64 transition-all min-h-screen duration-300">
+    {{> private/navbar}}
+    {{!-- ... (Scripts JS y Gráficos de Usuario arriba) ... --}}
+
+    {{#if analytics.ANALYTICS_WALLET_SUMMARY}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 mt-6 mb-8">
+        {{#singlecard analytics.ANALYTICS_WALLET_SUMMARY.summary.totalWallets lang }}
+        {{{this}}}
+        {{/singlecard}}
+        {{#singlecard analytics.ANALYTICS_WALLET_SUMMARY.summary.totalBalance lang }}
+        {{{this}}}
+        {{/singlecard}}
+        <div></div>
+
+        {{#if analytics.ANALYTICS_WALLET_SUMMARY.distribution}}
+        <section class="bg-white p-6 rounded-xl shadow-sm transition duration-300">
+            <canvas id="{{analytics.ANALYTICS_WALLET_SUMMARY.distribution.id}}"></canvas>
+            <script>
+                const permitData = {{{ json analytics.ANALYTICS_WALLET_SUMMARY.distribution }}};
+                renderPieChart(permitData);
+            </script>
+        </section>
+        {{/if}}
+
+        {{#if analytics.ANALYTICS_WALLET_TRANSACTIONS}}
+        <section class="md:col-span-2">
+            <div class="flex justify-between items-center">
+                <h2>{{ __ analytics.ANALYTICS_WALLET_TRANSACTIONS.title lang }}</h2>
+            </div>
+            {{> private/table/_table
+            list=analytics.ANALYTICS_WALLET_TRANSACTIONS.list
+            columns=analytics.ANALYTICS_WALLET_TRANSACTIONS.columns
+            actions=analytics.ANALYTICS_WALLET_TRANSACTIONS.actions
+            sortParams=analytics.ANALYTICS_WALLET_TRANSACTIONS.sortParams
+            currentQuery=analytics.ANALYTICS_WALLET_TRANSACTIONS.currentQuery
+            lang=lang
+            }}
+        </section>
+        {{/if}}
+    </div>
+    {{/if}}
+</div>

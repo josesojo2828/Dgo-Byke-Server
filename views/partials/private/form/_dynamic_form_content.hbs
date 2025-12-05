@@ -1,0 +1,122 @@
+{{! Error global del formulario }}
+{{#if form.globalError}}
+<div class="p-3 bg-red-100 border border-red-400 text-red-700 rounded mb-4">{{ __ form.globalError lang}}</div>
+{{/if}}
+
+{{! --------------------- BUCLE PRINCIPAL DE ELEMENTOS --------------------- }}
+<div class="space-y-6">
+    {{#each form.inputs}}
+
+    {{! Lógica para diferenciar entre SECTION y CONTROL }}
+
+    {{#if this.elements}}
+    {{! ES UNA SECCIÓN (FormSection) }}
+    <fieldset class="p-6 border border-gray-200 rounded-lg space-y-4 {{this.className}}">
+        <legend class="text-lg font-semibold text-gray-900 px-2">{{ __ this.title lang}}</legend>
+
+        {{! Bucle sobre los elementos dentro de la sección }}
+        {{#each this.elements}}
+        {{#ifeq this.controlType 'select-requets'}}
+        <div class="mb-4 {{this.className}}">
+            <label for="{{this.name}}" class="block text-sm font-medium text-gray-700">
+                {{__ label lang}} {{#if required}}<span class="text-red-500">*</span>{{/if}}
+            </label>
+            <input name="{{this.name}}_IDID" class="input foucs:outline-none w-full rounded-md border-gray-300 shadow-sm sm:text-sm" type="text"
+                id="form_customer_select_requets" required>
+            <input type="hidden" class="" name="" id="form_customer_select_requets_url" value="{{ this.path }}">
+            <input type="hidden" class="" name="" id="form_customer_select_requets_payload" value="{{this.payload}}">
+            <input type="hidden" class="" name="{{this.name}}" id="form_customer_select_requets_value" value="">
+        </div>
+        {{else}}
+        {{> private/form/_form_control this}}
+        {{/ifeq}}
+        {{/each}}
+    </fieldset>
+    {{else}}
+    {{! ES UN CONTROL INDIVIDUAL (FormInputType) }}
+    {{> _form_control this}}
+    {{/if}}
+
+    {{/each}}
+</div>
+
+{{! Botón de Envío (Incluido aquí para ser consistente dentro del flujo de campos) }}
+<div class="pt-6 border-t border-gray-200 mt-6">
+    <button type="submit"
+        class="w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+        {{ __ form.buttons.save lang }} Guardar Cambios
+    </button>
+</div>
+
+<script>
+    const inputRequets = document.getElementById('form_customer_select_requets');
+    const urlValue = document.getElementById('form_customer_select_requets_url');
+    const inputSetValue = document.getElementById('form_customer_select_requets_value');
+    const payloadValue = document.getElementById('form_customer_select_requets_payload');
+
+    const containerDiv = document.createElement('div');
+    containerDiv.style.position = 'relative';
+    inputRequets.parentNode.insertBefore(containerDiv, inputRequets);
+    containerDiv.appendChild(inputRequets);
+    const suggestionsList = document.createElement('ul');
+    suggestionsList.classList.add('autocomplete-suggestions');
+    suggestionsList.style.position = 'absolute';
+    suggestionsList.style.zIndex = '1000';
+    suggestionsList.style.display = 'none';
+    suggestionsList.style.listStyleType = 'none';
+    suggestionsList.style.padding = '0';
+    suggestionsList.style.margin = '0';
+    suggestionsList.style.backgroundColor = 'white';
+    suggestionsList.style.border = '1px solid #ccc';
+    suggestionsList.style.width = '100%';
+    containerDiv.appendChild(suggestionsList);
+    suggestionsList.innerHTML = '';
+
+    async function fetchSuggestions() {
+        const url = `${urlValue.value}?payload=${payloadValue.value}&param=${inputRequets.value}`;
+        const result = await fetch(url);
+        const dataResult = await result.json();
+        const data = dataResult.list;
+
+        if (data.length > 0) {
+            suggestionsList.style.display = 'block';
+            data.forEach(result => {
+                const li = document.createElement('li');
+                li.textContent = result.label;
+                li.style.padding = '8px';
+                li.style.cursor = 'pointer';
+                li.style.borderBottom = '1px solid #eee';
+                li.addEventListener('mouseenter', () => li.style.backgroundColor = '#f0f0f0');
+                li.addEventListener('mouseleave', () => li.style.backgroundColor = 'white');
+                li.addEventListener('click', () => {
+                    inputRequets.value = result.label;
+                    inputSetValue.value = result.value;
+                    // fillFormFields(result);
+                    suggestionsList.style.display = 'none';
+                });
+                suggestionsList.appendChild(li);
+            });
+        } else {
+            suggestionsList.style.display = 'none';
+        }
+    }
+
+    inputRequets.addEventListener('input', (event) => {
+        const query = event.target.value;
+        setTimeout(() => {
+            if (query && query.length > 0) {
+                fetchSuggestions(query);
+            } else {
+                suggestionsList.innerHTML = '';
+                suggestionsList.style.display = 'none';
+            }
+        }, 300);
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!containerDiv.contains(event.target)) {
+            suggestionsList.style.display = 'none';
+        }
+    });
+
+</script>

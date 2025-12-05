@@ -1,0 +1,424 @@
+{{> private/slide}}
+
+<div class="md:ml-64 transition-all duration-300">
+    <!-- Top Navigation -->
+    {{> private/navbar}}
+
+    <!-- Main Content Area -->
+    <main class="p-4">
+            {{!-- ------------------------------------------------------------------------------------------------------ --}}
+            {{!-- USER ANALYTICS --}}
+            {{!-- ------------------------------------------------------------------------------------------------------ --}}
+
+            <h2 class="text-xl font-black text-gray-900">{{ __
+                'common.dashboard.user_analytics' lang }}</h2>
+
+            <div class="">
+
+                {{logger user}}
+
+                {{#if userAnalytics}}
+                {{#if userAnalytics.ANALYTICS_USER_CARDS}}
+                <section class="summary-cards">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        {{{singlecard userAnalytics.ANALYTICS_USER_CARDS.total}}}
+                        {{{singlecard userAnalytics.ANALYTICS_USER_CARDS.active}}}
+                        {{{singlecard userAnalytics.ANALYTICS_USER_CARDS.suspended}}}
+                        {{{singlecard userAnalytics.ANALYTICS_USER_CARDS.deleted}}}
+                    </div>
+                </section>
+                {{/if}}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3">
+                    {{#if userAnalytics.ANALYTICS_USER__BY_PERMIT}}
+                    <section class="bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                        <canvas id="{{userAnalytics.ANALYTICS_USER__BY_PERMIT.id}}"></canvas>
+                        <script>
+                            const permitData = {{{ json userAnalytics.ANALYTICS_USER__BY_PERMIT }}};
+                            renderPieChart(permitData);
+                        </script>
+                    </section>
+                    {{/if}}
+
+                    {{#if userAnalytics.ANALYTICS_USER_LAST_REGISTER}}
+                    <section class="col-span-2 bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                        <table class="table-sm table w-full">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Dispositivo</th>
+                                    <th>Inicio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each userAnalytics.ANALYTICS_USER_LAST_REGISTER}}
+                                <tr>
+                                    <td>{{this.fullName}}</td>
+                                    <td>{{this.device}}</td>
+                                    <td>{{this.startedAt}}</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </section>
+                    {{/if}}
+
+                    {{#if userAnalytics.ANALYTICS_USER_LAST_SESSION}}
+                    <section class="col-span-2 bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                        <h3>Últimos Inicios de Sesión</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Dispositivo</th>
+                                    <th>Inicio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each userAnalytics.ANALYTICS_USER_LAST_SESSION}}
+                                <tr>
+                                    <td>{{fullName}}</td>
+                                    <td>{{device}}</td>
+                                    <td>{{startedAt}}</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </section>
+                    {{/if}}
+                </div>
+                {{/if}}
+            </div>
+
+            {{!-- ------------------------------------------------------------------------------------------------------ --}}
+            {{!-- WALLET ANALYTICS --}}
+            {{!-- ------------------------------------------------------------------------------------------------------ --}}
+
+            <h2 class="mt-5 text-xl font-black text-gray-900">{{ __
+                'common.dashboard.wallet_analytics' lang }}</h2>
+
+            {{#if wallet.ANALYTICS_WALLET_SUMMARY}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 mt-6 mb-8">
+                {{#singlecard wallet.ANALYTICS_WALLET_SUMMARY.summary.totalWallets lang }}
+                {{{this}}}
+                {{/singlecard}}
+                {{#singlecard wallet.ANALYTICS_WALLET_SUMMARY.summary.totalBalance lang }}
+                {{{this}}}
+                {{/singlecard}}
+                <div></div>
+
+                {{#if wallet.ANALYTICS_WALLET_SUMMARY.distribution}}
+                <section class="bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                    <canvas id="{{wallet.ANALYTICS_WALLET_SUMMARY.distribution.id}}"></canvas>
+                    <script>
+                        const distributionData = {{{ json wallet.ANALYTICS_WALLET_SUMMARY.distribution }}};
+                        renderPieChart(distributionData);
+                    </script>
+                </section>
+                {{/if}}
+
+                {{#if wallet.ANALYTICS_WALLET_TRANSACTIONS}}
+                <section class="md:col-span-2">
+                    <div class="flex justify-between items-center">
+                        <h2>{{ __ wallet.ANALYTICS_WALLET_TRANSACTIONS.title lang }}</h2>
+                    </div>
+                    {{> private/table/_table
+                    list=wallet.ANALYTICS_WALLET_TRANSACTIONS.list
+                    columns=wallet.ANALYTICS_WALLET_TRANSACTIONS.columns
+                    actions=wallet.ANALYTICS_WALLET_TRANSACTIONS.actions
+                    sortParams=wallet.ANALYTICS_WALLET_TRANSACTIONS.sortParams
+                    currentQuery=wallet.ANALYTICS_WALLET_TRANSACTIONS.currentQuery
+                    lang=lang
+                    }}
+                </section>
+                {{/if}}
+            </div>
+            {{/if}}
+
+            {{!-- ------------------------------------------------------------------------------------------------------ --}}
+            {{!-- SUBSCIPRTION ANALYTICS --}}
+            {{!-- ------------------------------------------------------------------------------------------------------ --}}
+
+            <h2 class="mt-5 text-xl font-black text-gray-900">{{ __
+                'common.dashboard.subscription_analytics' lang }}</h2>
+
+            <div class="p-2 lg:p-4">
+                {{#if subscription.ANALYTICS_SUBSCRIPTION_SUMMARY.summary}}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {{{ singlecard subscription.ANALYTICS_SUBSCRIPTION_SUMMARY.summary.totalSubscriptions lang }}}
+                    {{{ singlecard subscription.ANALYTICS_SUBSCRIPTION_SUMMARY.summary.activeSubscriptions lang }}}
+                    {{{ singlecard subscription.ANALYTICS_SUBSCRIPTION_SUMMARY.summary.monthlyRecurringRevenue lang }}}
+
+                    <div></div>
+
+                    {{#if subscription.ANALYTICS_SUBSCRIPTION_SUMMARY.distribution}}
+                    <section class="col-span-2 bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                        <canvas id="{{subscription.ANALYTICS_SUBSCRIPTION_SUMMARY.distribution.id}}"></canvas>
+                        <script>
+                            const planDistributionData = {{{ json subscription.ANALYTICS_SUBSCRIPTION_SUMMARY.distribution }}};
+                            renderPieChart(planDistributionData);
+                        </script>
+                    </section>
+                    {{/if}}
+                </div>
+                {{/if}}
+
+                {{!-- Gráfico de Distribución de Planes (Pie Chart) --}}
+
+
+            </div>
+
+            {{!--
+        </div> --}}
+
+        <!-- KPI Cards -->
+        {{!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-sm p-6 dashboard-card transition-all duration-300 animate-fade-in">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Total Revenue</p>
+                        <h3 class="text-2xl font-bold mt-1">$48,245</h3>
+                        <p class="text-xs mt-2"><span class="text-green-500">+12.5%</span> from last month</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-blue-100 text-blue-600">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 dashboard-card transition-all duration-300 animate-fade-in"
+                style="animation-delay: 0.1s">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Active Users</p>
+                        <h3 class="text-2xl font-bold mt-1">1,243</h3>
+                        <p class="text-xs mt-2"><span class="text-green-500">+8.2%</span> from last month</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-green-100 text-green-600">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 dashboard-card transition-all duration-300 animate-fade-in"
+                style="animation-delay: 0.2s">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Conversion Rate</p>
+                        <h3 class="text-2xl font-bold mt-1">3.65%</h3>
+                        <p class="text-xs mt-2"><span class="text-red-500">-0.5%</span> from last month</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-purple-100 text-purple-600">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 dashboard-card transition-all duration-300 animate-fade-in"
+                style="animation-delay: 0.3s">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Avg. Session</p>
+                        <h3 class="text-2xl font-bold mt-1">4m 23s</h3>
+                        <p class="text-xs mt-2"><span class="text-green-500">+1.2%</span> from last month</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
+
+        <!-- Charts Section -->
+        {{!-- <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Main Chart -->
+            <div class="bg-white rounded-xl shadow-sm p-6 lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold">Revenue Overview (Last 12 Months)</h3>
+                    <select
+                        class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option selected>Last 12 months</option>
+                        <option>All time</option>
+                    </select>
+                </div>
+                <div class="h-80">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Pie Chart -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold">Traffic Sources (March 2024)</h3>
+                    <button class="text-sm text-blue-600 hover:text-blue-800">View all</button>
+                </div>
+                <div class="h-80">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div> --}}
+
+        <!-- Recent Activity and Data Table -->
+        {{!-- <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Recent Activity -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold">Recent Activity</h3>
+                    <button class="text-sm text-blue-600 hover:text-blue-800">View all</button>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="p-2 rounded-full bg-blue-100 text-blue-600 mr-3">
+                            <i class="fas fa-file-import"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Data import completed</p>
+                            <p class="text-xs text-gray-500">10,245 records from sales.csv</p>
+                            <p class="text-xs text-gray-400 mt-1">5 minutes ago</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="p-2 rounded-full bg-green-100 text-green-600 mr-3">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">New user registered</p>
+                            <p class="text-xs text-gray-500">Sarah Johnson (Analyst)</p>
+                            <p class="text-xs text-gray-400 mt-1">1 hour ago</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="p-2 rounded-full bg-purple-100 text-purple-600 mr-3">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Report generated</p>
+                            <p class="text-xs text-gray-500">Quarterly sales analysis.pdf</p>
+                            <p class="text-xs text-gray-400 mt-1">3 hours ago</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="p-2 rounded-full bg-yellow-100 text-yellow-600 mr-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">System alert</p>
+                            <p class="text-xs text-gray-500">Unusual traffic spike detected</p>
+                            <p class="text-xs text-gray-400 mt-1">Yesterday</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="p-2 rounded-full bg-red-100 text-red-600 mr-3">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">Database backup</p>
+                            <p class="text-xs text-gray-500">Nightly backup completed successfully</p>
+                            <p class="text-xs text-gray-400 mt-1">Yesterday</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-white rounded-xl shadow-sm p-6 lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold">Recent Transactions (Last 7 days)</h3>
+                    <button class="text-sm text-blue-600 hover:text-blue-800">View all</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    ID</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Customer</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Date</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Amount</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1053</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">Acme Inc.</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">Mar 15, 2024</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">$1,245</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <button class="text-blue-600 hover:text-blue-900">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1052</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">TechCorp LLC</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">Mar 15, 2024</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">$2,840</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Processing</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <button class="text-blue-600 hover:text-blue-900">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1051</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">Global Solutions</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">Mar 14, 2024</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">$4,235</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <button class="text-blue-600 hover:text-blue-900">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1050</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">Innovate Co</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">Mar 13, 2024</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">$1,750</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <button class="text-blue-600 hover:text-blue-900">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1049</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">DataSystems Ltd</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">Mar 12, 2024</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">$3,150</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Failed</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <button class="text-blue-600 hover:text-blue-900">View</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> --}}
+    </main>
+</div>

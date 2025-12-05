@@ -1,0 +1,83 @@
+{{> private/slide}}
+
+<div class="md:ml-64 transition-all min-h-screen duration-300">
+    {{> private/navbar}}
+
+    <div class="grid grid-cols-3 gap-6 p-6">
+        <div class="space-y-6 col-span-2">
+            {{#if subs}}
+            <section class="p-4">
+                <div class="flex justify-between items-center mt-4">
+                    <h2 class="text-xl font-black">{{ __ 'common.subscription.active_plan' lang }}</h2>
+                    {{!-- {{> private/table/_actionsScreen actions=tab.actions }} --}}
+                    {{> private/table/_pagination
+                    hasPrev=subs.hasPrev
+                    currentQuery=subs.currentQuery
+                    currentPage=subs.currentPage
+                    totalPages=subs.totalPages
+                    t=subs.hasNext
+                    }}
+                </div>
+                {{> private/table/_table
+                list=subs.list
+                columns=subs.columns
+                actions=subs.actions
+                sortParams=subs.sortParams
+                currentQuery=subs.currentQuery
+                lang=lang
+                }}
+            </section>
+            {{/if}}
+        </div>
+
+        <div class="col-span-1 w-full flex flex-col gap-1">
+            <h2 class="text-3xl font-black text-gray-700">{{ __ 'common.subscription.plan' lang }}</h2>
+            <div id="current-subscription-container" class="">
+                <div class="bg-gradient-to-r from-slate-400 to-slate-700 text-white rounded-lg p-6 shadow-lg">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="text-xl font-bold">{{object.name}}</h3>
+                            <!-- Usamos un 'badge' de DaisyUI -->
+                            <div class="badge badge-outline text-white border-white/50 text-xs font-semibold mt-1">
+                                {{object.currency}}</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-3xl font-extrabold">${{object.price}}</span>
+                            <span class="text-xs opacity-80 block">/mes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{#if form.add }}
+            <h2 class="mt-4 text-3xl font-black text-gray-700">{{ __ 'common.subscription.add_content' lang }}</h2>
+
+            <button type="button"
+                class="bi bi-{{form.add.ico}}-fill text-{{form.add.color}} bg-{{form.add.color}}/30 px-3 rounded"
+                title="{{form.add.label}}"
+                onclick="loadContentModal('{{form.add.url}}?id={{object.id}}', '{{form.add.label}}')">Agregar</button>
+
+            {{#if object.content}}
+
+            <table>
+                <tbody>
+                    {{#each object.content}}
+                    <tr>
+                        <td>{{this}}</td>
+                        <td>
+                            <form class="" method="POST" action="/api/subscription/remove/content/{{../object.id}}">
+                                <input type="hidden" name="content" value="{{this}}">
+                                <button type="submit" class="btn btn-error btn-xs"><i
+                                        class="bi bi-trash-fill"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+
+            {{/if}}
+            {{/if}}
+        </div>
+    </div>
+</div>

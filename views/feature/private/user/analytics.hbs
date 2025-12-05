@@ -1,0 +1,96 @@
+{{> private/slide}}
+
+<div class="md:ml-64 transition-all min-h-screen duration-300">
+    {{> private/navbar}}
+
+    <div class="p-3">
+
+        {{#if analytics.ANALYTICS_USER_CARDS}}
+        <section class="summary-cards">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {{#singlecard analytics.ANALYTICS_USER_CARDS.total lang }}
+                {{{this}}}
+                {{/singlecard}}
+                {{#singlecard analytics.ANALYTICS_USER_CARDS.active lang }}
+                {{{this}}}
+                {{/singlecard}}
+                {{#singlecard analytics.ANALYTICS_USER_CARDS.suspended lang }}
+                {{{this}}}
+                {{/singlecard}}
+                {{#singlecard analytics.ANALYTICS_USER_CARDS.deleted lang }}
+                {{{this}}}
+                {{/singlecard}}
+            </div>
+        </section>
+        {{/if}}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3">
+            {{#if analytics.ANALYTICS_USER__BY_PERMIT}}
+            <section class="bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                <canvas id="{{analytics.ANALYTICS_USER__BY_PERMIT.id}}"></canvas>
+                <script>
+                    const permitData = {{{ json analytics.ANALYTICS_USER__BY_PERMIT }}};
+                    renderPieChart(permitData);
+                </script>
+            </section>
+            {{/if}}
+
+            {{#if analytics.ANALYTICS_USER_LAST_REGISTER}}
+            <section class="col-span-2 bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                <table class="table-sm table w-full">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Dispositivo</th>
+                            <th>Inicio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each analytics.ANALYTICS_USER_LAST_REGISTER}}
+                        <tr>
+                            <td>{{this.fullName}}</td>
+                            <td>{{this.device}}</td>
+                            <td>{{this.startedAt}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </section>
+            {{/if}}
+
+            {{#if analytics.ANALYTICS_USER__BY_PERMIT}}
+            <section class="bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                <canvas id="{{analytics.ANALYTICS_USER__BY_PERMIT.id}}"></canvas>
+                <script>
+                    const permitData = {{{ json analytics.ANALYTICS_USER__BY_PERMIT }}};
+                    renderPieChart(permitData);
+                </script>
+            </section>
+            {{/if}}
+
+            {{#if analytics.ANALYTICS_USER_LAST_SESSION}}
+            <section class="col-span-2 bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                <h3>Últimos Inicios de Sesión</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Dispositivo</th>
+                            <th>Inicio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each analytics..ANALYTICS_USER_LAST_SESSION}}
+                        <tr>
+                            <td>{{fullName}}</td>
+                            <td>{{device}}</td>
+                            <td>{{startedAt}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </section>
+            {{/if}}
+        </div>
+    </div>
+</div>

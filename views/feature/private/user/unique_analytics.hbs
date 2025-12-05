@@ -1,0 +1,194 @@
+{{> private/slide}}
+
+<div class="md:ml-64 transition-all min-h-screen duration-300">
+    {{> private/navbar}}
+
+
+    <div class="p-4 sm:p-6 lg:p-8 ">
+        <div class="max-w-7xl mx-auto">
+
+            <header class="mb-8">
+                <h1 class="text-3xl font-extrabold text-gray-900">
+                    Dashboard de Estadísticas
+                </h1>
+                <p class="text-lg text-gray-600 mt-1">
+                    Análisis de actividad para: <span class="font-semibold text-indigo-600">{{userInfo.email}}</span>
+                </p>
+                <p class="text-sm text-gray-500 mt-1">
+                    Miembro desde: {{userInfo.createdAt}}
+                </p>
+            </header>
+
+            <div class="mb-10 p-6 bg-white shadow-lg rounded-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+                    Logins Recientes (Máx. 5) 🔒
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Fecha</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    IP</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {{#each logins}}
+                            <tr class="hover:bg-indigo-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{startedAtFormatted}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ipAddress}}</td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="2" class="px-6 py-4 text-center text-sm text-gray-500">No hay registros
+                                    de sesiones recientes.</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mb-10 p-6 bg-white shadow-lg rounded-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+                    Últimas Transacciones (SUCCESS) 💵
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Fecha</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Monto</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tipo</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Método</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {{#each lastTransactions}}
+                            <tr class="hover:bg-indigo-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{createdAtFormatted}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                    ${{amountFormatted}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{type}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{paymentMethodName}}
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No hay
+                                    transacciones exitosas recientes.</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="bg-white p-6 shadow-lg rounded-xl border-t-4 border-green-500">
+                    <h3 class="text-xl font-bold text-green-700 mb-4">Suscripciones Activas ✅</h3>
+                    <ul class="space-y-3">
+                        {{#each lastActiveSubscriptions}}
+                        <li class="flex justify-between text-sm text-gray-700 border-b pb-2">
+                            <span>{{plan.name}}</span>
+                            <span class="font-semibold text-green-600">{{startDateFormatted}}</span>
+                        </li>
+                        {{else}}
+                        <li class="text-sm text-gray-500">No tiene suscripciones activas.</li>
+                        {{/each}}
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 shadow-lg rounded-xl border-t-4 border-blue-500">
+                    <h3 class="text-xl font-bold text-blue-700 mb-4">Próxima Renovación 🔄</h3>
+                    <ul class="space-y-3">
+                        {{#each lastNextSubscriptions}}
+                        <li class="flex justify-between text-sm text-gray-700 border-b pb-2">
+                            <span>{{plan.name}}</span>
+                            <span class="font-semibold text-blue-600">${{plan.price}}</span>
+                        </li>
+                        {{else}}
+                        <li class="text-sm text-gray-500">No hay renovaciones pendientes.</li>
+                        {{/each}}
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 shadow-lg rounded-xl border-t-4 border-red-500">
+                    <h3 class="text-xl font-bold text-red-700 mb-4">Suscripciones Declinadas ❌</h3>
+                    <ul class="space-y-3">
+                        {{#each lastDeclinedSubscriptions}}
+                        <li class="flex justify-between text-sm text-gray-700 border-b pb-2">
+                            <span>{{plan.name}}</span>
+                            <span class="font-semibold text-red-600">{{startDateFormatted}}</span>
+                        </li>
+                        {{else}}
+                        <li class="text-sm text-gray-500">No hay declinaciones recientes.</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mb-10 p-6 bg-white shadow-lg rounded-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+                    Últimas 5 Suscripciones (General) 📜
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Plan</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Inicio</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Precio</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {{#each lastSubscriptions}}
+                            <tr class="hover:bg-indigo-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{plan.name}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{startDateFormatted}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{plan.price}}
+                                    {{plan.currency}}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{statusClass}}">
+                                        {{status}}
+                                    </span>
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No se
+                                    encontraron suscripciones.</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

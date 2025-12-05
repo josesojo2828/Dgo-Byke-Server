@@ -1,0 +1,75 @@
+// Prisma Schema para PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// ======================================
+/// MODELOS SECURITY
+/// ======================================
+
+model Permit {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+  list        String[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relaciones
+  users User[]
+}
+
+/// ======================================
+/// MODELOS PRINCIPALES
+/// ======================================
+
+model User {
+  id String @id @default(uuid())
+
+  firstName String @default("")
+  lastName  String @default("")
+
+  email    String  @unique
+  username String  @unique
+  password String
+  fullName String?
+
+  avatarUrl String?
+
+  status UserStatus @default(ACTIVE)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  hashedRefreshToken String? // SESSION
+  token              String? // SESSION
+
+  // Security
+  permitId String
+  permits  Permit @relation(fields: [permitId], references: [id])
+
+  // --- Relación 1:1 para el Avatar ---
+  referralCode String? @unique // El código que este usuario comparte (ej: "JOSE-882")
+  
+  // ¿Quién me invitó? (Padre)
+  referredById String? 
+  referredBy   User?   @relation("UserReferrals", fields: [referredById], references: [id])
+
+  // ¿A quiénes invité? (Hijos)
+  referrals    User[]  @relation("UserReferrals")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}

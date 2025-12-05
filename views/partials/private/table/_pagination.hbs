@@ -1,0 +1,25 @@
+<div>
+    {{#if hasPrev}}
+        <a href="{{getPaginationUrl currentQuery (subtract currentPage 1) '-'}}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+    {{else}}
+        <button class="btn btn-sm btn-secondary" disabled>
+            <i class="bi bi-arrow-left"></i>
+        </button>
+    {{/if}}
+
+    <span class="text-muted btn-primary btn">
+        {{currentPage}}/{{totalPages}}
+    </span>
+
+    {{#if hasNext}}
+        <a href="{{getPaginationUrl currentQuery (add currentPage 1) '+'}}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-arrow-right"></i>
+        </a>
+    {{else}}
+        <button class="btn btn-sm btn-secondary" disabled>
+            <i class="bi bi-arrow-right"></i>
+        </button>
+    {{/if}}
+</div>

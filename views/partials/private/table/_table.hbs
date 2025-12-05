@@ -1,0 +1,34 @@
+
+<div class="card mt-4">
+    <div class="card-body bg-white overflow-x-auto">
+        {{#if list }}
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    {{#each columns}}
+                    <th>
+                        <a href="{{getSortUrl currentQuery this.field}}">
+                            {{ __ this.label lang }}
+                            {{#if (isCurrentSort sortParams.sortBy this.field)}}
+                            <i
+                                class="bi bi-caret-{{#if (isAscending sortParams.sortOrder)}}up{{else}}down{{/if}}-fill"></i>
+                            {{/if}}
+                        </a>
+                    </th>
+                    {{/each}}
+                    {{#if actions.unique }}
+                    <th class="text-end whitespace-nowrap min-w-max">    
+                        {{ __ 'common.actions.index' lang }}
+                    </th>
+                    {{/if}}
+                </tr>
+            </thead>
+            <tbody>
+                {{{renderTableRows columns list actions lang}}}
+            </tbody>
+        </table>
+        {{else}}
+        {{> private/utils/_no_results }}
+        {{/if}}
+    </div>
+</div>

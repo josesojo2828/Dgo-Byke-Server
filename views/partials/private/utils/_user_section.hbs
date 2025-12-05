@@ -1,0 +1,25 @@
+<div class="bg-white p-4 sm:p-6 w-full rounded-2xl shadow-lg">
+
+    <!-- Título de la tarjeta -->
+    <h2 class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-4">{{ __
+        'common.user.personal_data' lang }}</h2>
+
+    <!-- Encabezado con Foto y Nombre -->
+    <div class="flex items-center justify-between space-x-4 pt-6">
+        <!-- Imagen de perfil -->
+        <div class="flex gap-3 w-full items-center justify-center flex-col">
+            <div
+                class="h-28 w-28 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden ring-4 ring-gray-100">
+                <img src="{{user.avatarUrl}}" alt="Foto de perfil" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <p class="text-xs text-center font-semibold text-gray-500 uppercase">{{ __ 'form.labels.fullname' lang
+                    }}</p>
+                <p class="text-xl text-center font-bold text-gray-900">{{ user.firstName }} {{
+                    user.lastName }}</p>
+                <p class="text-sm text-center font-medium text-gray-500">{{ user.email }}</p>
+                <p class="text-sm text-center font-medium text-gray-500">@{{ user.username }}</p>
+            </div>
+        </div>
+    </div>
+</div>

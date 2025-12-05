@@ -1,0 +1,58 @@
+{{> private/slide}}
+
+<div class="md:ml-64 transition-all min-h-screen duration-300">
+    {{> private/navbar}}
+
+    <div class="p-2 lg:p-4">
+        {{#if analytics.ANALYTICS_SUBSCRIPTION_SUMMARY.summary}}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {{{ singlecard analytics.ANALYTICS_SUBSCRIPTION_SUMMARY.summary.totalSubscriptions lang }}}
+            {{{ singlecard analytics.ANALYTICS_SUBSCRIPTION_SUMMARY.summary.activeSubscriptions lang }}}
+            {{{ singlecard analytics.ANALYTICS_SUBSCRIPTION_SUMMARY.summary.monthlyRecurringRevenue lang }}}
+
+            <div></div>
+
+            {{#if analytics.ANALYTICS_SUBSCRIPTION_SUMMARY.distribution}}
+            <section class="col-span-2 bg-white p-6 rounded-xl shadow-sm transition duration-300">
+                <canvas id="{{analytics.ANALYTICS_SUBSCRIPTION_SUMMARY.distribution.id}}"></canvas>
+                <script>
+                    const planDistributionData = {{{ json analytics.ANALYTICS_SUBSCRIPTION_SUMMARY.distribution }}};
+                    renderPieChart(planDistributionData);
+                </script>
+            </section>
+            {{/if}}
+        </div>
+        {{/if}}
+
+        {{!-- Gráfico de Distribución de Planes (Pie Chart) --}}
+
+
+    </div>
+
+
+    {{!-- ====================================================== --}}
+    {{!-- 1. TARJETAS DE USUARIOS (ANALYTICS_USER_CARDS) --}}
+    {{!-- ====================================================== --}}
+
+
+    {{!-- ====================================================== --}}
+    {{!-- 2. GRÁFICO DE USUARIOS POR PERMISO (ANALYTICS_USER__BY_PERMIT) --}}
+    {{!-- Asume que getUsersByPermit retorna el formato RenderPieChart --}}
+    {{!-- ====================================================== --}}
+
+
+    {{!-- ... Aquí irían las tablas de Últimos Registros y Sesiones ... --}}
+    {{!-- ====================================================== --}}
+    {{!-- 1. TARJETAS Y GRÁFICO DE SALDO (ANALYTICS_WALLET_SUMMARY) --}}
+    {{!-- ====================================================== --}}
+
+    {{!-- Tarjetas de Billetera --}}
+
+    {{!-- Gráfico de Distribución de Saldo --}}
+
+
+    {{!-- ====================================================== --}}
+    {{!-- 1. TARJETAS Y DISTRIBUCIÓN DE PLANES (ANALYTICS_SUBSCRIPTION_SUMMARY) --}}
+    {{!-- ====================================================== --}}
+
+</div>

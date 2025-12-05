@@ -1,0 +1,286 @@
+{{> private/slide}}
+
+<div class="md:ml-64 transition-all min-h-screen duration-300">
+    {{> private/navbar}}
+
+    <div class="grid grid-cols-3 gap-6 p-6">
+        <div class="space-y-6">
+            {{#if wallet}}
+            <div class="bg-white p-6 sm:p-4 rounded-2xl shadow-lg space-y-6">
+                <!-- Título -->
+                <h2 class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-4">{{ __
+                    'common.wallet.wallet'
+                    lang }}</h2>
+                <!-- Sección de Saldo -->
+                <div class="space-y-1">
+                    <p class="text-xs font-semibold text-gray-500 uppercase">{{ __ 'common.wallet.balance' lang }}</p>
+                    <p class="text-3xl font-bold text-gray-900">
+                        $ {{ wallet.balance }} 
+                        <span class="text-xl font-medium text-gray-500">USD</span>
+                    </p>
+                </div>
+
+                <!-- Sección de Dirección -->
+                <div class="space-y-2">
+                    <label for="wallet-address-text" class="block text-sm font-medium text-gray-700">{{ __
+                        'common.wallet.address' lang }}</label>
+                    <div class="relative flex items-center bg-gray-100 rounded-lg p-3">
+                        <!-- Icono de Wallet -->
+                        <i class="bi bi-wallet text-gray-500 mr-2 " width="20" height="20"></i>
+
+                        <!-- Dirección (truncada) -->
+                        <span id="wallet-address-text" class="font-mono text-sm text-gray-700 truncate">
+                            {{ wallet.id }}
+                        </span>
+
+                        <!-- Botón de Copiar -->
+                        <i class="bi bi-copy text-gray-500 mr-2 " width="20" height="20"></i>
+                    </div>
+                </div>
+
+                <!-- Sección de Últimos Movimientos -->
+                <div class="space-y-4">
+                    <p class="text-sm font-medium text-gray-700">{{ __ 'common.wallet.history' lang }}</p>
+                    <ul class="space-y-4">
+
+                        {{!-- <li class="flex items-center space-x-3">
+                            <div class=" w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                                <!-- Icono de "+" -->
+                                <svg class="h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-800">Depósito de Subkit</p>
+                                <p class="text-sm text-gray-500">Oct 24, 2025</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-600">+ $50.00</p>
+                            </div>
+                        </li> --}}
+
+                        {{!-- <li class="flex items-center space-x-3">
+                            <div class=" w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <!-- Icono de "-" -->
+                                <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 12H6" />
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-800">Retiro a Coinbase</p>
+                                <p class="text-sm text-gray-500">Oct 23, 2025</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-red-600">- $120.00</p>
+                            </div>
+                        </li> --}}
+                    </ul>
+                </div>
+            </div>
+
+            {{/if}}
+
+            {{#if subscription}}
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ __ 'common.subscription.title' lang }}</h2>
+
+                {{> private/subscription/_subscription-info subscription=subscription}}
+                {{#if subscriptionNext}}
+                {{> private/subscription/_subscription-info subscription=subscriptionNext}}
+                {{/if}}
+
+                {{#if subscriptionNext}}
+                    <i></i>
+                {{else}}
+                <div onclick="document.getElementById('change-subscription').showModal()"
+                    class="border-t border-gray-200 pt-5 flex flex-col sm:flex-row gap-3">
+                    <button class="btn btn-prymary">
+                        {{ __ 'common.subscription.change' lang }}
+                    </button>
+                </div>
+                <dialog id="change-subscription" class="modal">
+                    <div class="modal-box">
+                        <form method="{{formSubscription.method}}" action="{{formSubscription.action}}" class="">
+                            {{> private/form/_dynamic_form_content form=formSubscription }}
+                        </form>
+                    </div>
+                </dialog>
+                {{/if}}
+
+            </div>
+            {{else}}
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ __ 'common.subscription.title' lang }}</h2>
+
+                <!-- Contenido para "Sin Suscripción" -->
+                <div class="mb-6 min-h-[100px] flex flex-col justify-center">
+                    <span class="text-sm font-medium text-gray-500">{{ __ 'common.subscription.status' lang }}</span>
+                    <p class="text-xl font-bold text-gray-800 mt-1">{{ __ 'common.subscription.no_subscription' lang }}
+                    </p>
+                    <p class="text-gray-500 text-sm mt-2">{{ __ 'common.subscription.description' lang }}</p>
+                </div>
+
+                <!-- Sección de CTA (Call to Action) -->
+                <div class="border-t border-gray-200 pt-5">
+                    <button onclick="document.getElementById('selected-subscription').showModal()"
+                        class="w-full btn btn-sm bg-indigo-500 hover:bg-indigo-600 text-white">
+                        Seleccionar un Plan
+                    </button>
+                </div>
+
+                <dialog id="selected-subscription" class="modal">
+                    <div class="modal-box">
+                        <form method="{{formSubscription.method}}" action="{{formSubscription.action}}" class="">
+                            {{> private/form/_dynamic_form_content form=formSubscription }}
+                        </form>
+                    </div>
+                </dialog>
+            </div>
+            {{/if}}
+        </div>
+
+        <div class="col-span-2 w-full flex flex-col gap-6">
+
+            <div class="bg-white p-4 sm:p-6 w-full rounded-2xl shadow-lg">
+
+                <!-- Título de la tarjeta -->
+                <h2 class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-4">{{ __ 'common.user.personal_data' lang }}</h2>
+
+                <!-- Encabezado con Foto y Nombre -->
+                <div class="flex items-center justify-between space-x-4 pt-6">
+                    <!-- Imagen de perfil -->
+                    <div class="flex gap-3 items-center">
+                        <div
+                        
+                            class="h-28 w-28 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden ring-4 ring-gray-100">
+                            <img src="{{object.avatarUrl}}" alt="Foto de perfil"
+                                class="w-full h-full object-cover"
+                                >
+                                
+                        </div>
+                        <!-- Nombre y @username -->
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase">{{ __ 'form.labels.fullname' lang }}</p>
+                            <p class="text-xl font-bold text-gray-900">{{ object.firstName }} {{ object.lastName }}</p>
+                            <p class="text-sm font-medium text-gray-500">@{{ object.username }}</p>
+                        </div>
+                    </div>
+                    <div class="p-5 flex justify-end gap-3">
+                        <button type="button" class="bi bi-trash-fill text-red-600" title="{{format.update.label}}" onclick="prepareDeleteModal('{{format.update.url}}?id={{object.id}}', '{{format.update.label}}')"></button>
+                        <button type="button" class="bi bi-trash-fill text-red-600" title="{{format.password.label}}" onclick="prepareDeleteModal('{{format.password.url}}?id={{object.id}}', '{{format.password.label}}')"></button>
+                        <button class="text-sm font-medium text-indigo-600 hover:text-white hover:bg-indigo-500 btn btn-sm" onclick="document.getElementById('modal_upload_photo_profile').showModal()">{{ __ 'form.title.upload_photo' lang}}</button>
+                        <dialog id="modal_upload_photo_profile" class="modal">
+                            <div class="modal-box">
+                                <form id="form-upload-photo-in-profile" method="POST" action="/api/core/profile"
+                                    enctype="multipart/form-data" class="relative overflow-hidden rounded-2xl">
+                                    <div class="relative p-6">
+
+                                        <input type="hidden" name="userId" value="{{object.id}}">
+
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <h3 class="text-lg font-semibold text-gray-800">{{ __
+                                                    'form.title.upload_photo' lang }}</h3>
+                                                <p class="text-sm text-slate-400">{{ __ 'form.labels.photo' lang }}</p>
+                                            </div>
+                                            <div class="rounded-lg bg-cyan-500/10 p-2">
+                                                <i class="bi bi-cloud-arrow-up-fill text-4xl"></i>
+                                            </div>
+                                        </div>
+
+                                        <div class="group/dropzone mt-6">
+                                            <div class="relative rounded-xl p-2 bg-gray-300">
+                                                <input type="file"
+                                                    class="absolute inset-0 z-50 h-full w-full cursor-pointer opacity-0"
+                                                    name="profile" />
+                                                <div class="space-y-6 text-center">
+                                                    <div
+                                                        class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-900">
+                                                        <i class="bi bi-image text-5xl text-cyan-300"></i>
+                                                    </div>
+
+                                                    <div class="space-y-2">
+                                                        <p class="text-base font-medium text-gray-800">{{ __
+                                                            'form.labels.upload_photo' lang }}</p>
+                                                        <p class="text-sm text-gray-600">{{ __
+                                                            'form.labels.upload_photo_supported' lang }}</p>
+                                                        <p class="text-xs text-gray-600">{{ __
+                                                            'form.labels.upload_photo_max_size' lang }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-6 grid grid-cols-2 gap-4">
+                                            <button type="submit" class="btn btn-primary">
+                                                {{ __ 'form.buttons.upload' lang }}
+                                                <i class="bi bi-cloud-arrow-up-fill "></i>
+                                            </button>
+                                            <form method="dialog">
+                                                <!-- if there is a button in form, it will close the modal -->
+                                                <button type="button" class="btn bg-gray-300 hover:bg-gray-400">{{ __
+                                                    'form.buttons.close' lang }}</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </dialog>
+                    </div>
+                </div>
+
+                <div class="pt-8 col-span-2 grid grid-cols-3 gap-3">
+                    <a href="?tab=transacciones" class="card">
+                        <div
+                            class="card-body border border-gray-200 rounded py-2 text-center hover:shadow-2xl duration-400 bg-gray-100 hover:bg-white">
+                            <span class="font-bold text-xs text-center bg-rd uppercase">transacciones</span>
+                            <b class="text-2xl">{{ object._count.transactions }}</b>
+                        </div>
+                    </a>
+                    <a href="?tab=paymentMethod" class="card">
+                        <div
+                            class="card-body border border-gray-200 rounded py-2 text-center hover:shadow-2xl duration-400 bg-gray-100 hover:bg-white">
+                            <span class="font-bold text-xs text-center bg-rd uppercase">Metodos de Pago</span>
+                            <b class="text-2xl">{{ object._count.paymentMethods }}</b>
+                        </div>
+                    </a>
+                    <a href="?tab=address" class="card">
+                        <div
+                            class="card-body border border-gray-200 rounded py-2 text-center hover:shadow-2xl duration-400 bg-gray-100 hover:bg-white">
+                            <span class="font-bold text-xs text-center bg-rd uppercase">Direcciones</span>
+                            <b class="text-2xl">{{ object._count.addresses }}</b>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            {{#if tab}}
+            <section class="p-4">
+                <div class="flex justify-between items-center mt-4">
+                    <h2>{{ __ tab.title lang }}</h2>
+                    {{> private/table/_actionsScreen actions=tab.actions }}
+                    {{> private/table/_pagination
+                    hasPrev=tab.hasPrev
+                    currentQuery=tab.currentQuery
+                    currentPage=tab.currentPage
+                    totalPages=tab.totalPages
+                    t=tab.hasNext
+                    }}
+                </div>
+                {{> private/table/_table
+                list=tab.list
+                columns=tab.columns
+                actions=tab.actions
+                sortParams=tab.sortParams
+                currentQuery=tab.currentQuery
+                lang=lang
+                }}
+            </section>
+            {{/if}}
+        </div>
+    </div>
+</div>
+
