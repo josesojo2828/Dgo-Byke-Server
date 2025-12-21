@@ -44,18 +44,23 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const isApiRequest = wantsJson || (request.url.startsWith('/api') && !wantsHtml);
 
     if (isApiRequest) {
-      response.status(status).send({
+      const errorResponse = {
+        success: false,
         statusCode: status,
-        timestamp: new Date().toISOString(),
-        path: request.url,
-        message: errorMessage,
-      });
+        error: {
+          code: (exception as any).code || 'INTERNAL_ERROR', // Prisma codes or others
+          message: errorMessage,
+          path: request.url,
+          timestamp: new Date().toISOString(),
+        }
+      };
+
+      response.status(status).send(errorResponse);
 
       if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
         this.logger.error(`🔥 ERROR 500 en ${request.url}:`);
-        console.error(exception); // Esto imprimirá el stack trace completo
+        console.error(exception);
       }
-
     } else {
 
       if ((request as any).flash) {
