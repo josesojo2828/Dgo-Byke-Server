@@ -1,75 +1,488 @@
-// Prisma Schema para PostgreSQL
+// --------------------------------------------------------
+// CONFIGURACION
+// --------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+  // Habilitamos preview features si necesitamos (ej. fullTextSearch)
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+// --------------------------------------------------------
+// ENUMS (Tipos de datos estrictos)
+// --------------------------------------------------------
+
+enum SystemRole {
+  ADMIN // Superadmin del sistema (Dueño del software)
+  ORGANIZER // Directivo de una organización
+  CYCLIST // Usuario final
 }
 
-/// ======================================
-/// MODELOS SECURITY
-/// ======================================
+enum OrgRole {
+  OWNER
+  ADMIN
+  STAFF
+  MEMBER
+}
 
-model Permit {
-  id String @id @default(uuid())
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
 
-  name        String
-  description String?
-  list        String[]
+enum RaceType {
+  CIRCUITO // Vueltas repetitivas
+  RUTA_LINEAL // Punto A a Punto B
+  CONTRARELOJ // Individual
+}
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+enum RaceStatus {
+  BORRADOR // Configurando
+  PROGRAMADA // Visible para inscripción
+  INSCRIPCION_CERRADA
+  EN_CURSO // Carrera activa (Live)
+  FINALIZADA // Resultados oficiales
+  CANCELADA
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  EXPORT_DATA
+}
+
+enum BikeType {
+  MTB
+  RUTA
+  GRAVEL
+  BMX
+  E_BIKE
+  OTRO
+}
+
+// --------------------------------------------------------
+// MODELOS PRINCIPALES
+// --------------------------------------------------------
+
+/// Usuario central del sistema. Maneja la autenticación y roles globales.
+model User {
+  id        String  @id @default(uuid())
+  email     String  @unique
+  password  String // Hashed
+  fullName  String
+  phone     String?
+  avatarUrl String?
+  isActive  Boolean @default(true)
+
+  // Seguridad y Roles
+  // Seguridad y Roles
+  // systemRole Superseded by dynamic RBAC, but kept for legacy/simple checks if needed.
+  systemRole SystemRole @default(CYCLIST)
 
   // Relaciones
-  users User[]
+  // organization   Organization? @relation(fields: [organizationId], references: [id]) -- REMOVED
+  // organizationId String? -- REMOVED
+  // orgRole        OrgRole? -- REMOVED
+
+  // Nueva relacion con Organizaciones via OrganizationMember
+  memberships OrganizationMember[]
+
+  // Nueva relacion con Roles (RBAC)
+  roles UserRole[]
+
+  // Pagos
+  payments Payment[]
+
+  cyclistProfile CyclistProfile? // Perfil atlético (separado para limpieza)
+
+  // Auditoría y Metadatos
+  metadata  Json?     @db.JsonB // Guarda: lastLoginIp, deviceToken, preferences
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft Delete
+
+  // Relaciones inversas
+  auditLogs    AuditLog[] // Historial de acciones de este usuario
+  managedRaces Race[]     @relation("RaceManager") // Carreras creadas por este usuario
 }
 
-/// ======================================
-/// MODELOS PRINCIPALES
-/// ======================================
+/// Detalles específicos del ciclista (salud, medidas, bici)
+model CyclistProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-model User {
-  id String @id @default(uuid())
+  birthDate        DateTime
+  bloodType        String?
+  emergencyContact String?
+  emergencyPhone   String?
 
-  firstName String @default("")
-  lastName  String @default("")
+  stats Json? @db.JsonB
 
-  email    String  @unique
-  username String  @unique
-  password String
-  fullName String?
+  // RELACIÓN NUEVA: Un ciclista tiene varias bicis
+  bicycles Bicycle[]
 
-  avatarUrl String?
+  participations RaceParticipant[]
+}
 
-  status UserStatus @default(ACTIVE)
+/// Inventario de bicicletas del usuario
+model Bicycle {
+  id               String         @id @default(uuid())
+  cyclistProfileId String
+  cyclist          CyclistProfile @relation(fields: [cyclistProfileId], references: [id], onDelete: Cascade)
+
+  brand        String // Ej: Specialized, Trek
+  model        String // Ej: Tarmac SL7
+  type         BikeType @default(MTB)
+  color        String?
+  serialNumber String? // Importante para seguridad/robos
+  photoUrl     String?
+
+  isActive Boolean @default(true) // Si la vende o se rompe, se desactiva
+
+  // Metadatos (Talla cuadro, tamaño rueda, componentes)
+  specs Json? @db.JsonB
+
+  // Relación: Saber en qué carreras se usó esta bici
+  racesUsed RaceParticipant[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-
-  hashedRefreshToken String? // SESSION
-  token              String? // SESSION
-
-  // Security
-  permitId String
-  permits  Permit @relation(fields: [permitId], references: [id])
-
-  // --- Relación 1:1 para el Avatar ---
-  referralCode String? @unique // El código que este usuario comparte (ej: "JOSE-882")
-  
-  // ¿Quién me invitó? (Padre)
-  referredById String? 
-  referredBy   User?   @relation("UserReferrals", fields: [referredById], references: [id])
-
-  // ¿A quiénes invité? (Hijos)
-  referrals    User[]  @relation("UserReferrals")
 }
 
-enum UserStatus {
-  ACTIVE
-  SUSPENDED
-  DELETED
+/// Tabla pivote con datos extra para la inscripción
+model RaceParticipant {
+  id     String @id @default(uuid())
+  raceId String
+  race   Race   @relation(fields: [raceId], references: [id])
+
+  profileId String
+  profile   CyclistProfile @relation(fields: [profileId], references: [id])
+
+  // CAMBIO: Registrar qué bici usó en esta carrera específica
+  bicycleId String?
+  bicycle   Bicycle? @relation(fields: [bicycleId], references: [id])
+
+  categoryAssignedId String?
+  bibNumber          Int
+  hasPaid            Boolean @default(false)
+  status             String?
+
+  finalTime Int?
+  rank      Int?
+
+  registeredAt DateTime @default(now())
+
+  events      RaceEvent[]
+  raceTimings RaceTiming[]
+
+  @@unique([raceId, bibNumber])
+  @@index([raceId, bibNumber])
+}
+
+/// Entidad legal o grupo que organiza las carreras.
+model Organization {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique // Para URLs amigables: dgo.com/org/mtb-guarico
+  description String?
+  logoUrl     String?
+
+  // Relaciones
+  members OrganizationMember[]
+  races   Race[]
+  tracks  Track[]
+
+  // Auditoría
+  metadata  Json?     @db.JsonB // Configuración específica de la org
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+/// Pistas o Rutas geolocalizadas.
+model Track {
+  id            String  @id @default(uuid())
+  name          String
+  description   String?
+  distanceKm    Float
+  elevationGain Float? // Desnivel positivo acumulado
+
+  // GeoJSON o Array de coordenadas para dibujar el mapa
+  // GeoJSON o Array de coordenadas para dibujar el mapa
+  geoData Json @db.JsonB
+
+  // Puntos de control en la ruta
+  checkpoints Checkpoint[]
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  races Race[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+/// Categorías de competición (Ej: Master A, Elite, Infantil).
+model Category {
+  id     String  @id @default(uuid())
+  name   String // Ej: "Master A"
+  minAge Int?
+  maxAge Int?
+  gender String? // M, F, MIXTO
+
+  // Relación de "Similitud" (Many-to-Many self relation)
+  // Permite agrupar categorías que pueden correr juntas (Ej: Master A y B)
+  similarTo   Category[] @relation("CategorySimilarity")
+  similarFrom Category[] @relation("CategorySimilarity")
+
+  races Race[] @relation("RaceCategories") // Relación N:M explícita o implícita
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+/// El evento principal.
+model Race {
+  id           String     @id @default(uuid())
+  name         String
+  date         DateTime
+  locationName String? // Nombre legible del lugar ("Parque X")
+  status       RaceStatus @default(BORRADOR)
+  type         RaceType
+
+  // Configuración técnica
+  laps  Int?     @default(1) // Si es circuito
+  price Decimal? @db.Decimal(10, 2)
+
+  // Relaciones
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  track   Track  @relation(fields: [trackId], references: [id])
+  trackId String
+
+  creator   User   @relation("RaceManager", fields: [creatorId], references: [id])
+  creatorId String
+
+  // Categorías habilitadas para esta carrera
+  categories Category[] @relation("RaceCategories")
+
+  // Participantes e Historial en vivo
+  // Participantes e Historial en vivo
+  participants RaceParticipant[]
+  liveEvents   RaceEvent[]
+  timings      RaceTiming[]
+
+  // Pagos asociados a esta carrera
+  payments Payment[]
+
+  // Auditoría
+  metadata  Json?     @db.JsonB // Reglas específicas, clima esperado, config de premios
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+// --------------------------------------------------------
+// DATOS EN VIVO & OFFLINE SYNC
+// --------------------------------------------------------
+
+/// Registro de cada vuelta o paso por punto de control.
+/// Diseñado para soportar sincronización offline.
+model RaceEvent {
+  id     String @id @default(uuid()) // ID generado en el móvil
+  raceId String
+  race   Race   @relation(fields: [raceId], references: [id])
+
+  participantId String
+  participant   RaceParticipant @relation(fields: [participantId], references: [id])
+
+  // Datos del evento
+  type      String // "LAP", "CHECKPOINT", "START", "FINISH"
+  value     Int? // Número de vuelta (ej: 1, 2, 3)
+  timestamp DateTime // La hora real en que ocurrió (en el dispositivo)
+
+  // Metadatos de Sincronización
+  syncedAt   DateTime @default(now()) // Cuándo llegó al servidor
+  deviceUuid String? // Qué celular registró esto (para auditoría)
+  appVersion String?
+
+  // Seguridad de integridad
+  hash        String? // Hash opcional para validar que no fue alterado
+  raceTimings RaceTiming[]
+
+  @@index([raceId, timestamp])
+}
+
+/// Tiempos verificados de paso por checkpoints
+model RaceTiming {
+  id String @id @default(uuid())
+
+  raceEventId String? // Opcional: El evento raw que generó este timing
+  raceEvent   RaceEvent? @relation(fields: [raceEventId], references: [id])
+
+  participantId String
+  participant   RaceParticipant @relation(fields: [participantId], references: [id])
+
+  checkpointId String
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id])
+
+  raceId String
+  race   Race   @relation(fields: [raceId], references: [id])
+
+  recordedAt DateTime // Hora exacta del paso
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --------------------------------------------------------
+// NUEVOS MODELOS (Organizacion, Checkpoints, RBAC, Pagos)
+// --------------------------------------------------------
+
+/// Miembros de una organizacion con cargo y rol
+model OrganizationMember {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  position String? // "Presidente", "Vicepresidente", etc.
+  role     OrgRole @default(MEMBER)
+
+  isActive Boolean  @default(true)
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, organizationId])
+}
+
+/// Puntos de control geolocalizados en un Track
+model Checkpoint {
+  id      String @id @default(uuid())
+  trackId String
+  track   Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  name      String
+  latitude  Float
+  longitude Float
+  order     Int // Secuencia en la ruta (0, 1, 2...)
+
+  isStart  Boolean @default(false)
+  isFinish Boolean @default(false)
+
+  timings RaceTiming[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Roles Dinamicos (RBAC)
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique // "Juez", "SuperAdmin"
+  description String?
+
+  permissions RolePermission[]
+  users       UserRole[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Permisos del sistema
+model Permission {
+  id          String  @id @default(uuid())
+  action      String  @unique // "race.create", "participant.verify"
+  description String?
+
+  roles RolePermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Tabla pivote Role-Permission
+model RolePermission {
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([roleId, permissionId])
+}
+
+/// Tabla pivote User-Role
+model UserRole {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([userId, roleId])
+}
+
+/// Pagos e Inscripciones
+model Payment {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  raceId String
+  race   Race   @relation(fields: [raceId], references: [id])
+
+  amount   Decimal       @db.Decimal(10, 2)
+  currency String        @default("USD")
+  status   PaymentStatus @default(PENDING)
+
+  transactionId String? // ID externo de la pasarela (Stripe, Paypal)
+  metadata      Json?   @db.JsonB
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --------------------------------------------------------
+// AUDITORIA Y SEGURIDAD
+// --------------------------------------------------------
+
+/// Historial inmutable de acciones críticas.
+model AuditLog {
+  id     String  @id @default(uuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  action   AuditAction
+  entity   String // "Race", "User", "Category"
+  entityId String // ID del objeto afectado
+
+  // Detalles del cambio
+  oldData Json? @db.JsonB // Snapshot antes del cambio
+  newData Json? @db.JsonB // Snapshot después del cambio
+
+  // Metadatos de red
+  ipAddress String
+  userAgent String?
+
+  createdAt DateTime @default(now())
 }

@@ -1,141 +1,134 @@
-import { PrismaClient, UserStatus, SubscriptionStatus } from '@prisma/client';
-import { faker } from '@faker-js/faker';
-import * as bcrypt from 'bcrypt';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from '../src/app.module'; // Adjust path if needed
+import { UserService } from '../src/modules/user/service/user.service';
+import { IamService } from '../src/modules/iam/service/iam.service';
+import { SystemPermissions } from '../src/modules/iam/system-permissions';
+import { PrismaService } from '../src/shared/service/prisma.service'; // Or import from module if exported
+import { CreateUserDto } from '../src/modules/user/interface/user.dto';
 
-const prisma = new PrismaClient();
+async function bootstrap() {
+    const app = await NestFactory.createApplicationContext(AppModule);
 
-// Configuración
-const USER_COUNT = 10;
-const PAYMENTS_PER_USER = 2;
-const HISTORY_COUNT = 4;
+    const userService = app.get(UserService);
+    const iamService = app.get(IamService);
+    const prismaService = app.get(PrismaService); // Helper for raw checks if needed
 
-async function main() {
-    console.log('🌱 Iniciando Seeding...');
+    console.log('Seeding database using Services...');
 
-    // 1. Obtener datos base necesarios (Asumiendo que ya corriste migraciones/fixtures básicos)
-    // Si no tienes fixtures, deberías crearlos aquí mismo antes de los usuarios.
+    // 1. Roles Definition
+    const rolesData = [
+        { name: 'SUPER_ADMIN', description: 'System Root User' },
+        { name: 'ORGANIZER', description: 'Race Organizer' },
+        { name: 'TIMING_OFFICIAL', description: 'Checkpoint Judge' },
+        { name: 'USER', description: 'Regular Cyclist' },
+    ];
 
-    const permits = await prisma.permit.findMany();
-    const plans = await prisma.subscriptionPlan.findMany();
-    const basePaymentMethods = await prisma.paymentMethod.findMany();
-
-    if (permits.length === 0 || plans.length === 0 || basePaymentMethods.length === 0) {
-        throw new Error('❌ Faltan datos base (Permisos, Planes o Métodos de Pago). Asegúrate de tener datos maestros.');
+    for (const r of rolesData) {
+        // Use IAM Service if possible, or raw if service doesn't support upsert by name
+        // Our IamService.createRole is strict Create, so let's check existence first
+        // Ideally we would add 'findByName' to IamService, but for now we can use PrismaService helper or try/catch
+        const existing = await prismaService.role.findUnique({ where: { name: r.name } });
+        if (!existing) {
+            await iamService.createRole(r);
+            console.log(`Role created: ${r.name}`);
+        }
     }
 
-    // Buscamos un permiso de usuario
-    const userPermit = permits.find(p => p.name.toUpperCase().includes('USER')) || permits[0];
+    // 2. Permissions Definition
+    const allPermissions = SystemPermissions.getAll();
+    console.log(`Seeding ${allPermissions.length} permissions...`);
 
-    // Hash de contraseña (una vez para todos para optimizar)
-    const passwordHash = await bcrypt.hash('abc.12345', 10);
+    for (const action of allPermissions) {
+        const description = `Allows ${action.split(':').pop()} on ${action.split(':')[0]}`;
+        const existing = await prismaService.permission.findUnique({ where: { action } });
 
-    console.log(`🚀 Creando ${USER_COUNT} usuarios con historial...`);
+        if (!existing) {
+            await iamService.createPermission({ action, description });
+        }
+    }
+    console.log('Permissions seeded.');
 
-    for (let i = 0; i < USER_COUNT; i++) {
-        // Generar datos de usuario
-        const sex = faker.person.sexType();
-        const firstName = faker.person.firstName(sex);
-        const lastName = faker.person.lastName();
-        const email = faker.internet.email({ firstName, lastName }).toLowerCase();
-        const username = (faker.internet.username({ firstName, lastName }) + faker.string.numeric(3)).toLowerCase();
+    // 3. Assign Permissions to Roles (RBAC)
+    const assign = async (roleName: string, actions: string[]) => {
+        const role = await prismaService.role.findUnique({ where: { name: roleName } });
+        if (!role) return;
 
-        // CREAR EL USUARIO COMPLETO (Con Wallet y Suscripción Free inicial)
-        // Prisma permite escrituras anidadas, así que hacemos todo en una sola query.
-        const user = await prisma.user.create({
-            data: {
-                firstName,
-                lastName,
-                fullName: `${firstName} ${lastName}`,
-                email,
-                username,
-                password: passwordHash,
-                status: UserStatus.ACTIVE,
-                permitId: userPermit.id,
+        for (const action of actions) {
+            const perm = await prismaService.permission.findUnique({ where: { action } });
+            if (perm) {
+                // Check if assigned
+                const assigned = await prismaService.rolePermission.findUnique({
+                    where: { roleId_permissionId: { roleId: role.id, permissionId: perm.id } }
+                });
 
-                // Crear Wallet automáticamente
-                wallet: {
-                    create: {
-                        balance: faker.finance.amount({ min: 0, max: 1000, dec: 2 }),
-                        currency: 'USD'
-                    }
-                },
-
-                // Crear Suscripción "Free" inicial (si tienes un plan llamado 'Free')
-                // Si no, puedes omitir esto o asignar uno random
-                subscriptions: {
-                    create: {
-                        planId: plans[0].id, // Asigna el primer plan disponible como el actual
-                        autoRenew: false,
-                        status: SubscriptionStatus.ACTIVE
-                    }
+                if (!assigned) {
+                    await iamService.assignPermissionToRole({ roleId: role.id, permissionId: perm.id });
                 }
             }
-        });
-
-        // 2. AGREGAR MÉTODOS DE PAGO
-        for (let j = 0; j < PAYMENTS_PER_USER; j++) {
-            const baseMethod = faker.helpers.arrayElement(basePaymentMethods);
-            let details = {};
-
-            if (baseMethod.code === 'CARD') {
-                details = {
-                    last4: faker.finance.creditCardNumber('####'),
-                    brand: faker.finance.creditCardIssuer(),
-                    expMonth: faker.number.int({ min: 1, max: 12 }),
-                    expYear: faker.number.int({ min: 2025, max: 2030 })
-                };
-            } else if (baseMethod.code === 'PAYPAL') {
-                details = { email: faker.internet.email({ provider: 'paypal.com' }) };
-            }
-
-            await prisma.userPaymentMethod.create({
-                data: {
-                    userId: user.id,
-                    paymentMethodId: baseMethod.id,
-                    details: details as any,
-                    isDefault: j === 0,
-                    active: true
-                }
-            });
         }
+    };
 
-        // 3. AGREGAR HISTORIAL DE SUSCRIPCIONES (PASADAS)
-        // Usamos createMany para velocidad, pero createMany no soporta relaciones anidadas profundas fácil en todos los DBs,
-        // así que un bucle simple está bien para pocos datos.
-        for (let k = 0; k < HISTORY_COUNT; k++) {
-            const plan = faker.helpers.arrayElement(plans);
+    // SUPER_ADMIN gets ALL
+    await assign('SUPER_ADMIN', SystemPermissions.getAll());
 
-            // Calcular fechas pasadas
-            const daysAgoStart = (k + 1) * 60; // Bloques de 2 meses atrás
-            const startDate = faker.date.recent({ days: 30, refDate: new Date(Date.now() - daysAgoStart * 24 * 60 * 60 * 1000) });
-            const endDate = new Date(startDate);
-            endDate.setMonth(endDate.getMonth() + 1);
+    // ORGANIZER
+    await assign('ORGANIZER', [
+        SystemPermissions.Races.Create,
+        SystemPermissions.Races.Read,
+        SystemPermissions.Races.Update,
+        SystemPermissions.Races.Delete,
+        SystemPermissions.Organizations.Read,
+        SystemPermissions.Organizations.Update,
+    ]);
 
-            await prisma.subscription.create({
-                data: {
-                    userId: user.id,
-                    planId: plan.id,
-                    startDate: startDate,
-                    endDate: endDate,
-                    status: faker.helpers.arrayElement([SubscriptionStatus.EXPIRED, SubscriptionStatus.CANCELED]),
-                    autoRenew: false,
-                    // Truco: Forzar createdAt antiguo si quieres que se ordenen por fecha de creación en la DB
-                    createdAt: startDate
-                }
-            });
-        }
+    // TIMING_OFFICIAL
+    await assign('TIMING_OFFICIAL', [
+        SystemPermissions.Timing.Record,
+        SystemPermissions.Timing.Verify,
+        SystemPermissions.Timing.Read,
+    ]);
 
-        process.stdout.write('.'); // Barra de progreso simple
+    // 4. Create Super Admin User via Service (Hashing included)
+    const adminEmail = 'admin@dgobyke.com';
+    const existingAdmin = await userService.findByEmail(adminEmail);
+
+    let adminUserId = existingAdmin?.id;
+
+    if (!existingAdmin) {
+        const newAdmin = await userService.create({
+            email: adminEmail,
+            // Password will be hashed by UserService now
+            password: 'abc.12345',
+            fullName: 'Super Admin',
+            isActive: true,
+            // Any other required fields
+        } as CreateUserDto);
+        adminUserId = newAdmin.id;
+        console.log(`Super Admin user created: ${adminEmail} via UserService`);
+    } else {
+        console.log(`Super Admin user already exists: ${adminEmail}`);
     }
 
-    console.log('\n✅ Seeding finalizado correctamente.');
+    // Assign Role via Service
+    if (adminUserId) {
+        const superAdminRole = await prismaService.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
+        if (superAdminRole) {
+            const hasRole = await prismaService.userRole.findUnique({
+                where: { userId_roleId: { userId: adminUserId, roleId: superAdminRole.id } }
+            });
+
+            if (!hasRole) {
+                await iamService.assignRoleToUser({ userId: adminUserId, roleId: superAdminRole.id });
+                console.log('Assigned SUPER_ADMIN role to user via IamService');
+            }
+        }
+    }
+
+    await app.close();
 }
 
-main()
+bootstrap()
     .catch((e) => {
         console.error(e);
         process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
     });
