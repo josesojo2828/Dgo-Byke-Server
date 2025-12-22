@@ -36,6 +36,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 import { SharedModule } from './shared/shared.module';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -101,6 +102,7 @@ import { SharedModule } from './shared/shared.module';
   providers: [
     CustomEventListener,
     DataSeederService,
+    JwtService,
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformResponseInterceptor,

@@ -81,6 +81,8 @@ model User {
   avatarUrl String?
   isActive  Boolean @default(true)
 
+  token String? @unique
+
   // Seguridad y Roles
   // Seguridad y Roles
   // systemRole Superseded by dynamic RBAC, but kept for legacy/simple checks if needed.

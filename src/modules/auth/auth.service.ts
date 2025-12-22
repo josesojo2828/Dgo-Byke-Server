@@ -37,8 +37,10 @@ export class AuthService {
         const slide = await this.dashboardService.getMenu(list, roleName);
 
         const payload: IJwtPayload = { email: user.email, sub: user.id };
+        const token = this.jwtService.sign(payload)
+        await this.userService.setToken(user.id, token);
         return {
-            access_token: this.jwtService.sign(payload),
+            access_token: token,
             user: user,
             slide
         };

@@ -55,6 +55,10 @@ export class UserService {
     return this.repository.findOne(id);
   }
 
+  async findByToken(tk: string) {
+    return this.repository.findToken(tk);
+  }
+
   async update(id: string, updateDto: UpdateUserDto) {
     // Hash password if present
     if (updateDto.password) {
@@ -121,6 +125,10 @@ export class UserService {
 
   async findWithPermissions(id: string) {
     return this.repository.findWithPermissions(id);
+  }
+
+  async setToken(id: string, token: string) {
+    return this.repository.update(id, { token });
   }
 
   extractPermissions = (user: any): string[] => {

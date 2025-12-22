@@ -8,6 +8,7 @@ import { UserService } from './service/user.service';
 import { UserController } from './controller/user.controller';
 import { UserRepository } from './repository/user.repository';
 import { UserUseCase } from './usecase/user.usecase';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   controllers: [UserController],
@@ -15,6 +16,7 @@ import { UserUseCase } from './usecase/user.usecase';
     UserService,
     UserRepository,
     UserUseCase,
+    JwtService
   ],
   exports: [UserService]
 })

@@ -21,10 +21,6 @@ export class PermissionsGuard implements CanActivate {
             return false;
         }
 
-        // Logic to check if user has required permissions
-        // We assume user.roles is populated with permissions
-        // This requires JwtStrategy to load relations: user -> roles -> permissions
-
         // Flatten permissions from all roles
         const userPermissions = new Set<string>();
 
@@ -41,6 +37,7 @@ export class PermissionsGuard implements CanActivate {
         }
 
         // Check if user has ALL required permissions (or ANY? usually ALL)
-        return requiredPermissions.every((permission) => userPermissions.has(permission));
+        const result = requiredPermissions.every((perm) => userPermissions.has(perm));
+        return result;
     }
 }

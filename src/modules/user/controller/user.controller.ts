@@ -1,13 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { CreateUserDto, UpdateUserDto } from '../interface/user.dto';
-import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
+import { SessionAuthGuard } from '../../auth/guard/session-auth-guard';
 import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(SessionAuthGuard, PermissionsGuard)
 export class UserController {
   constructor(private readonly service: UserService) { }
 
