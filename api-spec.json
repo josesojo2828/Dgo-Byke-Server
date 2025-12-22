@@ -1625,6 +1625,63 @@
           "Auth"
         ]
       }
+    },
+    "/dashboard/menu": {
+      "get": {
+        "operationId": "DashboardController_getMenu",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MenuItemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get dynamic sidebar menu based on permissions",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/dashboard/stats": {
+      "get": {
+        "operationId": "DashboardController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get dashboard KPI statistics",
+        "tags": [
+          "Dashboard"
+        ]
+      }
     }
   },
   "info": {
@@ -1771,6 +1828,50 @@
       "RegisterDto": {
         "type": "object",
         "properties": {}
+      },
+      "MenuItemDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "label",
+          "route",
+          "icon"
+        ]
+      },
+      "DashboardStatsDto": {
+        "type": "object",
+        "properties": {
+          "totalUsers": {
+            "type": "number"
+          },
+          "activeRaces": {
+            "type": "number"
+          },
+          "totalOrganizations": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "totalUsers",
+          "activeRaces",
+          "totalOrganizations"
+        ]
       }
     }
   }

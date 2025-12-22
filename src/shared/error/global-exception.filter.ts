@@ -43,37 +43,37 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     const isApiRequest = wantsJson || (request.url.startsWith('/api') && !wantsHtml);
 
-    if (isApiRequest) {
-      const errorResponse = {
-        success: false,
-        statusCode: status,
-        error: {
-          code: (exception as any).code || 'INTERNAL_ERROR', // Prisma codes or others
-          message: errorMessage,
-          path: request.url,
-          timestamp: new Date().toISOString(),
-        }
-      };
-
-      response.status(status).send(errorResponse);
-
-      if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
-        this.logger.error(`🔥 ERROR 500 en ${request.url}:`);
-        console.error(exception);
+    // if (isApiRequest) {
+    const errorResponse = {
+      success: false,
+      statusCode: status,
+      error: {
+        code: (exception as any).code || 'INTERNAL_ERROR', // Prisma codes or others
+        message: errorMessage,
+        path: request.url,
+        timestamp: new Date().toISOString(),
       }
-    } else {
+    };
 
-      if ((request as any).flash) {
-        (request as any).flash('error', errorMessage);
-      }
-      const referer = request.headers.referer;
+    response.status(status).send(errorResponse);
 
-      if (referer) {
-        response.status(303).redirect(referer); // 303 See Other es mejor para form submissions
-      } else {
-        // Fallback si no hay referer
-        response.status(303).redirect('/dashboard');
-      }
+    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logger.error(`🔥 ERROR 500 en ${request.url}:`);
+      console.error(exception);
     }
+    //   } else {
+
+    //     if ((request as any).flash) {
+    //       (request as any).flash('error', errorMessage);
+    //     }
+    //     const referer = request.headers.referer;
+
+    //     if (referer) {
+    //       response.status(303).redirect(referer); // 303 See Other es mejor para form submissions
+    //     } else {
+    //       // Fallback si no hay referer
+    //       response.status(303).redirect('/dashboard');
+    //     }
+    //   }
   }
 }

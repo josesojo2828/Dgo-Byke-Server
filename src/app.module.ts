@@ -33,6 +33,9 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { FilesModule } from './modules/files/files.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -40,6 +43,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
       isGlobal: true,
       envFilePath: '.env'
     }),
+
+    SharedModule,
 
     // FastifyMulterModule,
 
@@ -93,13 +98,12 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     AuthModule,
     FilesModule,
     NotificationsModule,
+    DashboardModule,
   ],
   controllers: [
     AppController,
   ],
   providers: [
-    PrismaService,
-    LoggerService,
     CustomEventListener,
     DataSeederService,
     {

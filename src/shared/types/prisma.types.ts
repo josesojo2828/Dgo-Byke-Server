@@ -18,7 +18,19 @@ export const TUserListInclude: Prisma.UserInclude = {
 // 🔵 DETALLE: Perfil completo, bicis y datos de auditoría
 export const TUserDetailInclude: Prisma.UserInclude = {
     memberships: { include: { organization: true } },
-    roles: { include: { role: true } }, // Include RBAC roles
+    roles: { 
+        include: { 
+            role: {
+                include: {
+                    permissions: {
+                        include: {
+                            permission: true
+                        }
+                    }
+                }
+            }
+        } 
+    }, // Include RBAC roles
     cyclistProfile: {
         include: {
             bicycles: true // Las bicis son pocas (1-5), es seguro traerlas

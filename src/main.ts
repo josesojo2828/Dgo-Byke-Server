@@ -74,7 +74,9 @@ async function bootstrap() {
   // --- FIN VALIDACIÓN GLOBAL ---
 
   app.useGlobalFilters(new GlobalExceptionFilter());
+  const PORT = process.env.PORT ?? 3001;
 
-  await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
+  console.log(`Server running on port ${PORT}`);
+  await app.listen(PORT, '0.0.0.0');
 }
 bootstrap();

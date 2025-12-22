@@ -122,5 +122,34 @@ export class UserService {
   async findWithPermissions(id: string) {
     return this.repository.findWithPermissions(id);
   }
+
+  extractPermissions = (user: any): string[] => {
+    if (!user || !user.roles || !Array.isArray(user.roles)) {
+      return [];
+    }
+
+    // Usamos un Set para evitar duplicados si dos roles tienen el mismo permiso
+    const permissionsSet = new Set<string>();
+
+    // 1. Recorremos los roles asignados al usuario
+    user.roles.forEach((userRole: any) => {
+
+      // Validamos que el rol y sus permisos existan
+      if (userRole.role && Array.isArray(userRole.role.permissions)) {
+
+        // 2. Recorremos los permisos dentro de ese rol
+        userRole.role.permissions.forEach((rolePermission: any) => {
+
+          // 3. Accedemos al objeto 'permission' y luego a la 'action'
+          if (rolePermission.permission && rolePermission.permission.action) {
+            permissionsSet.add(rolePermission.permission.action);
+          }
+        });
+      }
+    });
+
+    // Convertimos el Set de vuelta a un Array
+    return Array.from(permissionsSet);
+  };
 }
 

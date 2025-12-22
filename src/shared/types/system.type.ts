@@ -1,42 +1,38 @@
-// =================================================================
-// UTILIDADES
-// =================================================================
-
-// Tipo auxiliar para manejar campos JSONB (flexibles)
-export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
-
-// Alias para IDs, útil si mañana cambias de UUID a Int o BigInt
-export type Type_ID = string;
-
-// Interfaz base para todas las entidades que tienen auditoría automática
-export interface BaseEntity {
-  id: Type_ID;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null; // Soft Delete
-}
-
-// =================================================================
-// ENUMS (Replicados del Schema para uso en lógica)
-// =================================================================
+// ==========================================
+// 1. ENUMS (Tipos estrictos)
+// ==========================================
 
 export enum SystemRole {
   ADMIN = 'ADMIN',
   ORGANIZER = 'ORGANIZER',
-  CYCLIST = 'CYCLIST',
+  CYCLIST = 'CYCLIST'
 }
 
+export const ROLE_ROOT_PATHS: Record<SystemRole, string> = {
+  // [ROL_EN_BD] : 'PREFIJO_EN_FRONTEND'
+
+  [SystemRole.ADMIN]: '/admin',         // Para rutas como: localhost:3000/admin/users
+  [SystemRole.ORGANIZER]: '/organizer', // Para rutas como: localhost:3000/organizer/users
+  [SystemRole.CYCLIST]: '/portal',      // O '/cyclist', como hayas llamado a tu carpeta en Next.js
+};
+
 export enum OrgRole {
-  PRESIDENTE = 'PRESIDENTE',
-  VICEPRESIDENTE = 'VICEPRESIDENTE',
-  SECRETARIO = 'SECRETARIO',
-  MIEMBRO = 'MIEMBRO',
+  OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
+  STAFF = 'STAFF',
+  MEMBER = 'MEMBER'
+}
+
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED'
 }
 
 export enum RaceType {
   CIRCUITO = 'CIRCUITO',
   RUTA_LINEAL = 'RUTA_LINEAL',
-  CONTRARELOJ = 'CONTRARELOJ',
+  CONTRARELOJ = 'CONTRARELOJ'
 }
 
 export enum RaceStatus {
@@ -45,7 +41,15 @@ export enum RaceStatus {
   INSCRIPCION_CERRADA = 'INSCRIPCION_CERRADA',
   EN_CURSO = 'EN_CURSO',
   FINALIZADA = 'FINALIZADA',
-  CANCELADA = 'CANCELADA',
+  CANCELADA = 'CANCELADA'
+}
+
+export enum AuditAction {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+  LOGIN = 'LOGIN',
+  EXPORT_DATA = 'EXPORT_DATA'
 }
 
 export enum BikeType {
@@ -54,167 +58,166 @@ export enum BikeType {
   GRAVEL = 'GRAVEL',
   BMX = 'BMX',
   E_BIKE = 'E_BIKE',
-  OTRO = 'OTRO',
+  OTRO = 'OTRO'
 }
 
-export enum AuditAction {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
-  LOGIN = 'LOGIN',
-  EXPORT_DATA = 'EXPORT_DATA',
-}
+// ==========================================
+// 2. TIPOS AUXILIARES (Para manejar JSON y Decimales)
+// ==========================================
 
-// =================================================================
-// ENTIDADES DE DOMINIO
-// =================================================================
+// Tipo genérico para campos JSONB
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
-export interface User extends BaseEntity {
+// ==========================================
+// 3. INTERFACES DE MODELOS
+// ==========================================
+
+export interface User {
+  id: string;
   email: string;
-  password?: string;
+  password: string; // Hash
   fullName: string;
-  phone?: string | null;
-  avatarUrl?: string | null;
+  phone: string | null;
+  avatarUrl: string | null;
   isActive: boolean;
-
   systemRole: SystemRole;
-
-  // IDs de Relaciones
-  organizationId?: Type_ID | null;
-  orgRole?: OrgRole | null;
+  metadata: JsonValue | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 
   // Relaciones
-  organization?: Organization;
-  cyclistProfile?: CyclistProfile;
-
-  metadata?: Json | null;
-
-  // Conteos de relaciones
-  _count?: {
-    auditLogs: number;
-    managedRaces: number;
-  };
+  memberships?: OrganizationMember[];
+  roles?: UserRole[];
+  payments?: Payment[];
+  cyclistProfile?: CyclistProfile | null;
+  auditLogs?: AuditLog[];
+  managedRaces?: Race[];
 }
 
 export interface CyclistProfile {
-  id: Type_ID;
-  userId: Type_ID;
-
+  id: string;
+  userId: string;
   birthDate: Date;
-  bloodType?: string | null;
-  emergencyContact?: string | null;
-  emergencyPhone?: string | null;
-
-  stats?: Json | null;
+  bloodType: string | null;
+  emergencyContact: string | null;
+  emergencyPhone: string | null;
+  stats: JsonValue | null;
 
   // Relaciones
   user?: User;
   bicycles?: Bicycle[];
   participations?: RaceParticipant[];
-
-  // Conteos
-  _count?: {
-    bicycles: number;
-    participations: number;
-  };
 }
 
-export interface Bicycle extends BaseEntity {
-  cyclistProfileId: Type_ID;
-
+export interface Bicycle {
+  id: string;
+  cyclistProfileId: string;
   brand: string;
   model: string;
   type: BikeType;
-  color?: string | null;
-  serialNumber?: string | null;
-  photoUrl?: string | null;
+  color: string | null;
+  serialNumber: string | null;
+  photoUrl: string | null;
   isActive: boolean;
-
-  specs?: Json | null;
+  specs: JsonValue | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 
   // Relaciones
   cyclist?: CyclistProfile;
-  racesUsed?: RaceParticipant[]; // Historial donde se usó
-
-  // Conteos
-  _count?: {
-    racesUsed: number;
-  };
+  racesUsed?: RaceParticipant[];
 }
 
-export interface Organization extends BaseEntity {
+export interface RaceParticipant {
+  id: string;
+  raceId: string;
+  profileId: string;
+  bicycleId: string | null;
+  categoryAssignedId: string | null;
+  bibNumber: number;
+  hasPaid: boolean;
+  status: string | null;
+  finalTime: number | null; // Entero (posiblemente milisegundos o segundos)
+  rank: number | null;
+  registeredAt: Date;
+
+  // Relaciones
+  race?: Race;
+  profile?: CyclistProfile;
+  bicycle?: Bicycle | null;
+  events?: RaceEvent[];
+  raceTimings?: RaceTiming[];
+}
+
+export interface Organization {
+  id: string;
   name: string;
   slug: string;
-  description?: string | null;
-  logoUrl?: string | null;
-
-  metadata?: Json | null;
+  description: string | null;
+  logoUrl: string | null;
+  metadata: JsonValue | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 
   // Relaciones
-  members?: User[];
+  members?: OrganizationMember[];
   races?: Race[];
   tracks?: Track[];
-
-  // Conteos
-  _count?: {
-    members: number;
-    races: number;
-    tracks: number;
-  };
 }
 
-export interface Track extends BaseEntity {
+export interface Track {
+  id: string;
   name: string;
-  description?: string | null;
+  description: string | null;
   distanceKm: number;
-  elevationGain?: number | null;
-
-  geoData: Json; // GeoJSON
-
-  organizationId: Type_ID;
+  elevationGain: number | null;
+  geoData: JsonValue; // GeoJSON
+  organizationId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 
   // Relaciones
+  checkpoints?: Checkpoint[];
   organization?: Organization;
   races?: Race[];
-
-  // Conteos
-  _count?: {
-    races: number;
-  };
 }
 
-export interface Category extends BaseEntity {
+export interface Category {
+  id: string;
   name: string;
-  minAge?: number | null;
-  maxAge?: number | null;
-  gender?: string | null;
+  minAge: number | null;
+  maxAge: number | null;
+  gender: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 
   // Relaciones
   similarTo?: Category[];
-  similarFrom?: Category[]; // Relación inversa
+  similarFrom?: Category[];
   races?: Race[];
-
-  // Conteos
-  _count?: {
-    similarTo: number;
-    similarFrom: number;
-    races: number;
-  };
 }
 
-export interface Race extends BaseEntity {
+export interface Race {
+  id: string;
   name: string;
   date: Date;
-  locationName?: string | null;
+  locationName: string | null;
   status: RaceStatus;
   type: RaceType;
-
-  laps?: number | null;
-  price?: number | null;
-
-  organizationId: Type_ID;
-  trackId: Type_ID;
-  creatorId: Type_ID;
+  laps: number | null;
+  price: number | null; // Decimal se suele manejar como number o string en JS
+  organizationId: string;
+  trackId: string;
+  creatorId: string;
+  metadata: JsonValue | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 
   // Relaciones
   organization?: Organization;
@@ -223,84 +226,148 @@ export interface Race extends BaseEntity {
   categories?: Category[];
   participants?: RaceParticipant[];
   liveEvents?: RaceEvent[];
-
-  metadata?: Json | null;
-
-  // Conteos
-  _count?: {
-    categories: number;
-    participants: number;
-    liveEvents: number;
-  };
-}
-
-export interface RaceParticipant {
-  id: Type_ID;
-  raceId: Type_ID;
-  profileId: Type_ID;
-  bicycleId?: Type_ID | null;
-
-  categoryAssignedId?: Type_ID | null;
-  bibNumber: number;
-  hasPaid: boolean;
-  status?: string | null;
-
-  finalTime?: number | null; // ms
-  rank?: number | null;
-
-  registeredAt: Date;
-
-  // Relaciones
-  race?: Race;
-  profile?: CyclistProfile;
-  bicycle?: Bicycle;
-  events?: RaceEvent[];
-
-  // Conteos
-  _count?: {
-    events: number; // Cantidad de vueltas/checkpoints registrados
-  };
+  timings?: RaceTiming[];
+  payments?: Payment[];
 }
 
 export interface RaceEvent {
-  id: Type_ID;
-  raceId: Type_ID;
-  participantId: Type_ID;
-
+  id: string;
+  raceId: string;
+  participantId: string;
   type: string;
-  value?: number | null;
+  value: number | null;
   timestamp: Date;
-
   syncedAt: Date;
-  deviceUuid?: string | null;
-  appVersion?: string | null;
-  hash?: string | null;
+  deviceUuid: string | null;
+  appVersion: string | null;
+  hash: string | null;
 
   // Relaciones
   race?: Race;
   participant?: RaceParticipant;
-
-  // Es una hoja (nodo final), no suele tener _count hijos
+  raceTimings?: RaceTiming[];
 }
 
-export interface AuditLog {
-  id: Type_ID;
-  userId?: Type_ID | null;
-
-  action: AuditAction;
-  entity: string;
-  entityId: string;
-
-  oldData?: Json | null;
-  newData?: Json | null;
-
-  ipAddress: string;
-  userAgent?: string | null;
-
+export interface RaceTiming {
+  id: string;
+  raceEventId: string | null;
+  participantId: string;
+  checkpointId: string;
+  raceId: string;
+  recordedAt: Date;
   createdAt: Date;
+  updatedAt: Date;
+
+  // Relaciones
+  raceEvent?: RaceEvent | null;
+  participant?: RaceParticipant;
+  checkpoint?: Checkpoint;
+  race?: Race;
+}
+
+export interface OrganizationMember {
+  id: string;
+  userId: string;
+  organizationId: string;
+  position: string | null;
+  role: OrgRole;
+  isActive: boolean;
+  joinedAt: Date;
 
   // Relaciones
   user?: User;
+  organization?: Organization;
+}
 
-  // Es una hoja (nodo final), no suele tener _count hijos
+export interface Checkpoint {
+  id: string;
+  trackId: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  order: number;
+  isStart: boolean;
+  isFinish: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+
+  // Relaciones
+  track?: Track;
+  timings?: RaceTiming[];
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+
+  // Relaciones
+  permissions?: RolePermission[];
+  users?: UserRole[];
+}
+
+export interface Permission {
+  id: string;
+  action: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+
+  // Relaciones
+  roles?: RolePermission[];
+}
+
+export interface RolePermission {
+  roleId: string;
+  permissionId: string;
+  assignedAt: Date;
+
+  // Relaciones
+  role?: Role;
+  permission?: Permission;
+}
+
+export interface UserRole {
+  userId: string;
+  roleId: string;
+  assignedAt: Date;
+
+  // Relaciones
+  user?: User;
+  role?: Role;
+}
+
+export interface Payment {
+  id: string;
+  userId: string;
+  raceId: string;
+  amount: number; // Decimal
+  currency: string;
+  status: PaymentStatus;
+  transactionId: string | null;
+  metadata: JsonValue | null;
+  createdAt: Date;
+  updatedAt: Date;
+
+  // Relaciones
+  user?: User;
+  race?: Race;
+}
+
+export interface AuditLog {
+  id: string;
+  userId: string | null;
+  action: AuditAction;
+  entity: string;
+  entityId: string;
+  oldData: JsonValue | null;
+  newData: JsonValue | null;
+  ipAddress: string;
+  userAgent: string | null;
+  createdAt: Date;
+
+  // Relaciones
+  user?: User | null;
 }

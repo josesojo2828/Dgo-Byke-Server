@@ -3,16 +3,18 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/service/user.service';
 import { LoginDto, IJwtPayload, RegisterDto } from './interface/auth.dto';
 import * as bcrypt from 'bcrypt';
-import { SystemRole } from 'src/shared/types/system.type';
+import { SystemRole, User } from 'src/shared/types/system.type';
+import { DashboardService } from '../dashboard/service/dashboard.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private userService: UserService,
         private jwtService: JwtService,
+        private dashboardService: DashboardService,
     ) { }
 
-    async validateUser(email: string, pass: string): Promise<any> {
+    async validateUser(email: string, pass: string) {
         const user = await this.userService.findByEmail(email);
         if (user && (await bcrypt.compare(pass, user.password))) {
             const { password, ...result } = user;
@@ -24,13 +26,21 @@ export class AuthService {
     async login(loginDto: LoginDto) {
         const user = await this.validateUser(loginDto.email, loginDto.password);
         if (!user) {
-            throw new UnauthorizedException('Credenciales inválidas');
+            // throw new UnauthorizedException('Credenciales inválidas');
+            return { error: 'Credenciales malas (Prueba)' };
         }
+
+        const role = (user.roles[0] as any).role.name;
+        const roleName = role === 'SUPER_ADMIN' ? 'ADMIN' : role;
+
+        const list = this.userService.extractPermissions(user);
+        const slide = await this.dashboardService.getMenu(list, roleName);
 
         const payload: IJwtPayload = { email: user.email, sub: user.id };
         return {
             access_token: this.jwtService.sign(payload),
             user: user,
+            slide
         };
     }
 

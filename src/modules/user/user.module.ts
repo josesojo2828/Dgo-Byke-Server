@@ -8,7 +8,6 @@ import { UserService } from './service/user.service';
 import { UserController } from './controller/user.controller';
 import { UserRepository } from './repository/user.repository';
 import { UserUseCase } from './usecase/user.usecase';
-import { PrismaService } from 'src/shared/service/prisma.service';
 
 @Module({
   controllers: [UserController],
@@ -16,7 +15,6 @@ import { PrismaService } from 'src/shared/service/prisma.service';
     UserService,
     UserRepository,
     UserUseCase,
-    PrismaService
   ],
   exports: [UserService]
 })

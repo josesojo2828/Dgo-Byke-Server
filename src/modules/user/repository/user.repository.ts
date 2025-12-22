@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { CreateUserDto, UpdateUserDto, TUserWhere, TUserUniqueId } from '../interface/user.dto';
+import { TUserDetailInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class UserRepository {
@@ -29,7 +30,7 @@ export class UserRepository {
   }
 
   async findOne(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+    return this.prisma.user.findUnique({ where: { id }, include: TUserDetailInclude });
   }
 
   async findUnique(where: TUserUniqueId) {
@@ -45,11 +46,11 @@ export class UserRepository {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+    return this.prisma.user.findUnique({ where: { email }, include: TUserDetailInclude });
   }
 
   async update(id: string, data: UpdateUserDto) {
-    return this.prisma.user.update({ where: { id }, data });
+    return this.prisma.user.update({ where: { id }, data, include: TUserDetailInclude });
   }
 
   async remove(id: string) {
