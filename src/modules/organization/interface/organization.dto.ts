@@ -14,10 +14,6 @@ export class CreateOrganizationDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @IsOptional()
-  @IsUrl({}, { message: 'El logo debe ser una URL válida' })
-  logoUrl?: string;
 }
 
 export class UpdateOrganizationDto extends PartialType(CreateOrganizationDto) { }

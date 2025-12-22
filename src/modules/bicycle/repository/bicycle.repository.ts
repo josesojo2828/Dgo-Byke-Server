@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { CreateBicycleDto, UpdateBicycleDto } from '../interface/bicycle.dto';
+import { TBicycleListInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class BicycleRepository {
@@ -25,6 +26,7 @@ export class BicycleRepository {
       cursor,
       where: { ...where, deletedAt: null },
       orderBy,
+      include: TBicycleListInclude
     });
   }
 

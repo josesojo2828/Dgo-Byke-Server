@@ -216,6 +216,8 @@ model Organization {
   description String?
   logoUrl     String?
 
+  inviteToken String?  @unique
+
   // Relaciones
   members OrganizationMember[]
   races   Race[]

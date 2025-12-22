@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '../repository/organization.repository';
 import { CreateOrganizationDto, UpdateOrganizationDto } from '../interface/organization.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
+import { PrismaService } from 'src/shared/service/prisma.service';
+import { EntityNotFoundException } from 'src/shared/error';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class OrganizationService {
   constructor(
     private readonly repository: OrganizationRepository,
-    private readonly eventEmitter: EventEmitter2
+    private readonly eventEmitter: EventEmitter2,
+    private readonly prisma: PrismaService
   ) { }
 
   async create(createDto: CreateOrganizationDto) {
@@ -23,7 +27,11 @@ export class OrganizationService {
     );
 
     // 2. Repository Logic
-    const result = await this.repository.create(createDto);
+    const result = await this.repository.create({
+      name: createDto.name,
+      slug: createDto.slug,
+      description: createDto.description,
+    });
 
     // 3. Post-Event
     this.eventEmitter.emit(
@@ -98,5 +106,62 @@ export class OrganizationService {
     );
 
     return result;
+  }
+
+  //
+
+  // --- 1. OBTENER INFO PÚBLICA POR SLUG ---
+  async getPublicInfoBySlug(slug: string) {
+    const org = await this.prisma.organization.findUnique({
+      where: { slug: slug }, // <--- BUSCAMOS POR SLUG
+      include: {
+        _count: { select: { members: true } }
+      }
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organización no encontrada');
+    }
+
+    return {
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      description: org.description,
+      logoUrl: org.logoUrl,
+      membersCount: org._count.members,
+      status: 'ACTIVE' // O org.status
+    };
+  }
+
+  // --- 2. UNIRSE POR SLUG ---
+  async joinBySlug(userId: string, slug: string) {
+    // a. Buscar la Org por SLUG
+    const org = await this.prisma.organization.findUnique({
+      where: { slug: slug } // <--- BUSCAMOS POR SLUG
+    });
+
+    if (!org) throw new NotFoundException('Organización no encontrada');
+
+    // b. Verificar si ya es miembro
+    const existing = await this.prisma.organizationMember.findFirst({ // O 'organizationMember' según tu schema
+      where: {
+        organizationId: org.id,
+        userId: userId
+      }
+    });
+
+    if (existing) throw new ConflictException('Ya eres miembro de esta organización');
+
+    // c. Crear miembro
+    await this.prisma.organizationMember.create({ // O 'organizationMember'
+      data: {
+        userId,
+        organizationId: org.id,
+        role: 'MEMBER'
+      }
+    });
+
+    return { success: true, orgName: org.name };
   }
 }

@@ -1,11 +1,12 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Prisma } from '@prisma/client';
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsObject, IsUUID, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional, IsObject, IsUUID } from 'class-validator';
 import { BikeType } from 'src/shared/types/system.type';
 
 export class CreateBicycleDto {
   // @IsUUID('4', { message: 'Debes especificar un perfil de ciclista válido' })
-  @IsString({ message: 'Debes especificar un perfil de ciclista válido' })
+  @IsUUID('4', { message: 'Debes especificar un perfil de ciclista válido (UUID)' })
+  @IsNotEmpty({ message: 'El ID del perfil es requerido' })
   cyclistProfileId: string;
 
   @IsString({ message: 'La marca es obligatoria' })
@@ -36,11 +37,7 @@ export class CreateBicycleDto {
   specs?: any;
 }
 
-export class UpdateBicycleDto extends PartialType(CreateBicycleDto) {
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-}
+export class UpdateBicycleDto extends PartialType(CreateBicycleDto) {}
 
 export type TBicycleCreate = Prisma.BicycleCreateInput;
 export type TBicycleUpdate = Prisma.BicycleUpdateInput;

@@ -18,8 +18,8 @@ export const TUserListInclude: Prisma.UserInclude = {
 // 🔵 DETALLE: Perfil completo, bicis y datos de auditoría
 export const TUserDetailInclude: Prisma.UserInclude = {
     memberships: { include: { organization: true } },
-    roles: { 
-        include: { 
+    roles: {
+        include: {
             role: {
                 include: {
                     permissions: {
@@ -29,7 +29,7 @@ export const TUserDetailInclude: Prisma.UserInclude = {
                     }
                 }
             }
-        } 
+        }
     }, // Include RBAC roles
     cyclistProfile: {
         include: {
@@ -51,7 +51,9 @@ export type TBicycleInclude = Prisma.BicycleInclude;
 export const TBicycleListInclude: Prisma.BicycleInclude = {
     cyclist: {
         include: {
-            user: { select: { fullName: true, avatarUrl: true } } // Solo ver de quién es
+            user: {
+                select: { fullName: true, email: true, avatarUrl: true }
+            }
         }
     }
 };

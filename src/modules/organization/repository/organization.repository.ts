@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
-import { CreateOrganizationDto, UpdateOrganizationDto, TOrganizationWhere, TOrganizationUniqueId } from '../interface/organization.dto';
+import { TOrganizationCreate, UpdateOrganizationDto, TOrganizationWhere, TOrganizationUniqueId } from '../interface/organization.dto';
 
 @Injectable()
 export class OrganizationRepository {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(data: CreateOrganizationDto) {
+  async create(data: TOrganizationCreate) {
     return this.prisma.organization.create({ data });
   }
 
@@ -25,6 +25,26 @@ export class OrganizationRepository {
       cursor,
       where: { ...where, deletedAt: null },
       orderBy,
+      // AGREGAMOS ESTO: Relaciones para la tabla
+      include: {
+        // 1. Traer conteos para la tabla
+        _count: {
+          select: {
+            races: true,
+            members: true
+          }
+        },
+        // 2. Traer el dueño (Asumiendo que OrgRole.OWNER existe o traemos al primero)
+        members: {
+          where: { role: 'OWNER' },
+          take: 1,
+          include: {
+            user: {
+              select: { fullName: true, email: true, avatarUrl: true }
+            }
+          }
+        }
+      }
     });
   }
 

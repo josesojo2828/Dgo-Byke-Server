@@ -8,6 +8,7 @@ import { SystemPermissions } from '../../iam/system-permissions';
 import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 import { UserService } from 'src/modules/user/service/user.service';
 import { CyclistProfileService } from 'src/modules/user/service/cyclist-profile.service';
+import { BusinessLogicException, GlobalExceptionFilter } from 'src/shared/error';
 
 @Controller('bicycles')
 @UseGuards(SessionAuthGuard, PermissionsGuard)
@@ -52,9 +53,7 @@ export class BicycleController {
   async getMyBikes(@Param('id') userId: string) {
     // Primero obtenemos el ID del perfil del ciclista usando el ID del usuario
     const profile = await this.profileService.findOneByUserId(userId);
-
     if (!profile) return []; // Si no tiene perfil, no tiene bicis
-
     return this.service.findAllByProfile(profile.id);
   }
 
@@ -62,7 +61,7 @@ export class BicycleController {
   @Post('v1/mine/:id')
   async createMyBike(@Param('id') userId: string, @Body() createDto: CreateBicycleDto) {
     const profile = await this.profileService.findOneByUserId(userId);
-    if (!profile) throw new Error("Debes crear un perfil de ciclista primero");
+    if (!profile) throw new BusinessLogicException('Debes crear un perfil de ciclista primero');
 
     console.log(profile);
 
