@@ -43,16 +43,11 @@ import { SharedModule } from './shared/shared.module';
       isGlobal: true,
       envFilePath: '.env'
     }),
-
     SharedModule,
-
-    // FastifyMulterModule,
-
     EventEmitterModule.forRoot({
       wildcard: true,
       delimiter: '.'
     }),
-
     PrismaModule.forRootAsync({
       isGlobal: true,
       useFactory: async (configService: ConfigService) => {
