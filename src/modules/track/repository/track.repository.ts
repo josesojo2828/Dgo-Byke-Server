@@ -23,7 +23,7 @@ export class TrackRepository {
       skip,
       take,
       cursor,
-      where,
+      where: { ...where, deletedAt: null },
       orderBy,
     });
   }
@@ -41,10 +41,10 @@ export class TrackRepository {
   }
 
   async remove(id: string) {
-    return this.prisma.track.delete({ where: { id } });
+    return this.prisma.track.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async count(where?: Prisma.TrackWhereInput) {
-    return this.prisma.track.count({ where });
+    return this.prisma.track.count({ where: { ...where, deletedAt: null } });
   }
 }

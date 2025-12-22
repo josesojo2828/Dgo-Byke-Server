@@ -9,14 +9,20 @@ import { BicycleController } from './controller/bicycle.controller';
 import { BicycleRepository } from './repository/bicycle.repository';
 import { BicycleUseCase } from './usecase/bicycle.usecase';
 import { PrismaService } from 'src/shared/service/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from '../user/user.module';
 
 @Module({
+  imports: [
+    UserModule
+  ],
   controllers: [BicycleController],
   providers: [
     BicycleService,
     BicycleRepository,
     BicycleUseCase,
-    PrismaService
+    PrismaService,
+    JwtService
   ],
   exports: [BicycleService]
 })

@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
-import { CreateUserDto, UpdateUserDto, TUserWhere, TUserUniqueId, TUserUpdate } from '../interface/user.dto';
+import { CreateUserDto, UpdateUserDto, TUserWhere, TUserUniqueId, TUserUpdate, TUserCreate } from '../interface/user.dto';
 import { TUserDetailInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class UserRepository {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(data: CreateUserDto) {
+  async create(data: TUserCreate) {
     return this.prisma.user.create({ data });
   }
 
@@ -24,7 +24,7 @@ export class UserRepository {
       skip,
       take,
       cursor,
-      where,
+      where: { ...where, deletedAt: null },
       orderBy,
     });
   }
@@ -40,7 +40,7 @@ export class UserRepository {
 
   async findUnique(where: TUserUniqueId) {
     return this.prisma.user.findUnique({
-      where,
+      where: { ...where, deletedAt: null },
       include: {
         payments: true,
         roles: {
@@ -59,11 +59,11 @@ export class UserRepository {
   }
 
   async remove(id: string) {
-    return this.prisma.user.delete({ where: { id } });
+    return this.prisma.user.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async count(where?: TUserWhere) {
-    return this.prisma.user.count({ where });
+    return this.prisma.user.count({ where: { ...where, deletedAt: null } });
   }
 
   async findWithPermissions(id: string) {

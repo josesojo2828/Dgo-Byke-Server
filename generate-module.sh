@@ -71,7 +71,7 @@ export class ${CAP_NAME}Repository {
   }
 
   async remove(id: string) {
-    // return this.prisma.modelName.delete({ where: { id } });
+    // return this.prisma.modelName.update({ where: { id }, data: { deletedAt: new Date() } });
     return 'remove action in DB';
   }
 }

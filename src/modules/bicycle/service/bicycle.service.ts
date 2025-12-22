@@ -99,4 +99,10 @@ export class BicycleService {
 
     return result;
   }
+
+  async findAllByProfile(profileId: string) {
+    return this.repository.findAll({
+      where: { cyclistProfileId: profileId }
+    });
+  }
 }

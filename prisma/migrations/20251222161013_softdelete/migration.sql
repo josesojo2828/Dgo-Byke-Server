@@ -28,6 +28,7 @@ CREATE TABLE "User" (
     "phone" TEXT,
     "avatarUrl" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "token" TEXT,
     "systemRole" "SystemRole" NOT NULL DEFAULT 'CYCLIST',
     "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -41,11 +42,14 @@ CREATE TABLE "User" (
 CREATE TABLE "CyclistProfile" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "birthDate" TIMESTAMP(3) NOT NULL,
+    "birthDate" TIMESTAMP(3),
     "bloodType" TEXT,
     "emergencyContact" TEXT,
     "emergencyPhone" TEXT,
     "stats" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "CyclistProfile_pkey" PRIMARY KEY ("id")
 );
@@ -82,6 +86,9 @@ CREATE TABLE "RaceParticipant" (
     "finalTime" INTEGER,
     "rank" INTEGER,
     "registeredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "RaceParticipant_pkey" PRIMARY KEY ("id")
 );
@@ -164,6 +171,9 @@ CREATE TABLE "RaceEvent" (
     "deviceUuid" TEXT,
     "appVersion" TEXT,
     "hash" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "RaceEvent_pkey" PRIMARY KEY ("id")
 );
@@ -178,6 +188,7 @@ CREATE TABLE "RaceTiming" (
     "recordedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "RaceTiming_pkey" PRIMARY KEY ("id")
 );
@@ -191,6 +202,9 @@ CREATE TABLE "OrganizationMember" (
     "role" "OrgRole" NOT NULL DEFAULT 'MEMBER',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "OrganizationMember_pkey" PRIMARY KEY ("id")
 );
@@ -207,6 +221,7 @@ CREATE TABLE "Checkpoint" (
     "isFinish" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Checkpoint_pkey" PRIMARY KEY ("id")
 );
@@ -218,6 +233,7 @@ CREATE TABLE "Role" (
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
 );
@@ -229,6 +245,7 @@ CREATE TABLE "Permission" (
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Permission_pkey" PRIMARY KEY ("id")
 );
@@ -238,6 +255,9 @@ CREATE TABLE "RolePermission" (
     "roleId" TEXT NOT NULL,
     "permissionId" TEXT NOT NULL,
     "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "RolePermission_pkey" PRIMARY KEY ("roleId","permissionId")
 );
@@ -247,6 +267,9 @@ CREATE TABLE "UserRole" (
     "userId" TEXT NOT NULL,
     "roleId" TEXT NOT NULL,
     "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "UserRole_pkey" PRIMARY KEY ("userId","roleId")
 );
@@ -263,6 +286,7 @@ CREATE TABLE "Payment" (
     "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
 );
@@ -279,6 +303,8 @@ CREATE TABLE "AuditLog" (
     "ipAddress" TEXT NOT NULL,
     "userAgent" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
@@ -301,6 +327,9 @@ CREATE TABLE "_RaceCategories" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_token_key" ON "User"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CyclistProfile_userId_key" ON "CyclistProfile"("userId");

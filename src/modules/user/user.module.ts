@@ -9,15 +9,19 @@ import { UserController } from './controller/user.controller';
 import { UserRepository } from './repository/user.repository';
 import { UserUseCase } from './usecase/user.usecase';
 import { JwtService } from '@nestjs/jwt';
+import { CyclistProfileService } from './service/cyclist-profile.service';
+import { CyclistProfileController } from './controller/cyclist-profile.controller';
 
 @Module({
-  controllers: [UserController],
+  imports: [UserModule],
+  controllers: [UserController, CyclistProfileController],
   providers: [
     UserService,
     UserRepository,
     UserUseCase,
-    JwtService
+    CyclistProfileService,
+    JwtService,
   ],
-  exports: [UserService]
+  exports: [UserService,CyclistProfileService]
 })
 export class UserModule { }

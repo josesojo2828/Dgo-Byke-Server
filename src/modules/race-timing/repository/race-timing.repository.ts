@@ -24,7 +24,7 @@ export class RaceTimingRepository {
             skip,
             take,
             cursor,
-            where,
+            where: { ...where, deletedAt: null },
             orderBy,
         });
     }
@@ -42,10 +42,10 @@ export class RaceTimingRepository {
     }
 
     async remove(id: string) {
-        return this.prisma.raceTiming.delete({ where: { id } });
+        return this.prisma.raceTiming.update({ where: { id }, data: { deletedAt: new Date() } });
     }
 
     async count(where?: TRaceTimingWhere) {
-        return this.prisma.raceTiming.count({ where });
+        return this.prisma.raceTiming.count({ where: { ...where, deletedAt: null } });
     }
 }

@@ -9,14 +9,18 @@ import { AuditLogController } from './controller/audit-log.controller';
 import { AuditLogRepository } from './repository/audit-log.repository';
 import { AuditLogUseCase } from './usecase/audit-log.usecase';
 import { PrismaService } from 'src/shared/service/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
+  imports: [UserModule],
   controllers: [AuditLogController],
   providers: [
     AuditLogService,
     AuditLogRepository,
     AuditLogUseCase,
-    PrismaService
+    PrismaService,
+    JwtService
   ],
   exports: [AuditLogService]
 })

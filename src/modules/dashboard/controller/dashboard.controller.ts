@@ -4,10 +4,11 @@ import { JwtAuthGuard } from '../../../modules/auth/guard/jwt-auth.guard';
 import { CurrentUser } from '../../../shared/decorators/permissions.decorator';
 import { DashboardService } from '../service/dashboard.service';
 import { DashboardStatsDto, MenuItemDto } from '../interface/dashboard.dto';
+import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 
 @ApiTags('Dashboard')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 @Controller('dashboard')
 export class DashboardController {
     constructor(private readonly dashboardService: DashboardService) { }

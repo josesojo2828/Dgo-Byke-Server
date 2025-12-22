@@ -40,4 +40,10 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
+
+  @Get('v1/dashboard/overview')
+  @RequirePermissions(SystemPermissions.Users.Read)
+  getDashboardOverview() {
+    return this.service.getDashboardStats();
+  }
 }

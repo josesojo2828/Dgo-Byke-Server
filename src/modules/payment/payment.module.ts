@@ -9,14 +9,18 @@ import { PaymentController } from './controller/payment.controller';
 import { PaymentRepository } from './repository/payment.repository';
 import { PaymentUseCase } from './usecase/payment.usecase';
 import { PrismaService } from 'src/shared/service/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
+  imports: [UserModule],
   controllers: [PaymentController],
   providers: [
     PaymentService,
     PaymentRepository,
     PaymentUseCase,
-    PrismaService
+    PrismaService,
+    JwtService
   ],
   exports: [PaymentService]
 })

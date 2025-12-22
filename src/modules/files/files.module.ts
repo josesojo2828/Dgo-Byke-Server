@@ -6,9 +6,12 @@
 import { Module } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FilesController } from './files.controller';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
-  providers: [FilesService],
+  imports: [UserModule],
+  providers: [FilesService,JwtService],
   controllers: [FilesController]
 })
 export class FilesModule { }

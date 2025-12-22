@@ -23,7 +23,7 @@ export class CheckpointRepository {
       skip,
       take,
       cursor,
-      where,
+      where: { ...where, deletedAt: null },
       orderBy,
     });
   }
@@ -41,10 +41,10 @@ export class CheckpointRepository {
   }
 
   async remove(id: string) {
-    return this.prisma.checkpoint.delete({ where: { id } });
+    return this.prisma.checkpoint.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async count(where?: TCheckpointWhere) {
-    return this.prisma.checkpoint.count({ where });
+    return this.prisma.checkpoint.count({ where: { ...where, deletedAt: null } });
   }
 }

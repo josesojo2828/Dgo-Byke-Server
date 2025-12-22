@@ -24,7 +24,7 @@ export class IamRepository {
             skip,
             take,
             cursor,
-            where,
+            where: { ...where, deletedAt: null },
             orderBy,
             include: { permissions: true }
         });
@@ -39,11 +39,11 @@ export class IamRepository {
     }
 
     async deleteRole(id: string) {
-        return this.prisma.role.delete({ where: { id } });
+        return this.prisma.role.update({ where: { id }, data: { deletedAt: new Date() } });
     }
 
     async countRoles(where?: TRoleWhere) {
-        return this.prisma.role.count({ where });
+        return this.prisma.role.count({ where: { ...where, deletedAt: null } });
     }
 
     // --- Permissions ---
@@ -63,7 +63,7 @@ export class IamRepository {
             skip,
             take,
             cursor,
-            where,
+            where: { ...where, deletedAt: null },
             orderBy,
         });
     }
@@ -73,7 +73,7 @@ export class IamRepository {
     }
 
     async countPermissions(where?: TPermissionWhere) {
-        return this.prisma.permission.count({ where });
+        return this.prisma.permission.count({ where: { ...where, deletedAt: null } });
     }
 
     // --- Assignments ---

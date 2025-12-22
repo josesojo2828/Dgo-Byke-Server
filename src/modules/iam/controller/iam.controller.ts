@@ -6,9 +6,10 @@ import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../system-permissions';
+import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 
 @Controller('iam')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(SessionAuthGuard, PermissionsGuard)
 export class IamController {
     constructor(private readonly service: IamService) { }
 

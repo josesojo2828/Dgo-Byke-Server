@@ -9,14 +9,18 @@ import { RaceEventController } from './controller/race-event.controller';
 import { RaceEventRepository } from './repository/race-event.repository';
 import { RaceEventUseCase } from './usecase/race-event.usecase';
 import { PrismaService } from 'src/shared/service/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
+  imports: [UserModule],
   controllers: [RaceEventController],
   providers: [
     RaceEventService,
     RaceEventRepository,
     RaceEventUseCase,
-    PrismaService
+    PrismaService,
+    JwtService,
   ],
   exports: [RaceEventService]
 })

@@ -9,14 +9,18 @@ import { RaceController } from './controller/race.controller';
 import { RaceRepository } from './repository/race.repository';
 import { RaceUseCase } from './usecase/race.usecase';
 import { PrismaService } from 'src/shared/service/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
+  imports: [UserModule],
   controllers: [RaceController],
   providers: [
     RaceService,
     RaceRepository,
     RaceUseCase,
-    PrismaService
+    PrismaService,
+    JwtService,
   ],
   exports: [RaceService]
 })

@@ -5,8 +5,11 @@
  */
 import { Module } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
-  providers: [NotificationsService]
+  imports: [UserModule],
+  providers: [NotificationsService,JwtService]
 })
 export class NotificationsModule { }

@@ -23,7 +23,7 @@ export class CategoryRepository {
       skip,
       take,
       cursor,
-      where,
+      where: { ...where, deletedAt: null },
       orderBy,
     });
   }
@@ -41,10 +41,10 @@ export class CategoryRepository {
   }
 
   async remove(id: string) {
-    return this.prisma.category.delete({ where: { id } });
+    return this.prisma.category.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async count(where?: Prisma.CategoryWhereInput) {
-    return this.prisma.category.count({ where });
+    return this.prisma.category.count({ where: { ...where, deletedAt: null } });
   }
 }

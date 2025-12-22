@@ -9,14 +9,18 @@ import { CategoryController } from './controller/category.controller';
 import { CategoryRepository } from './repository/category.repository';
 import { CategoryUseCase } from './usecase/category.usecase';
 import { PrismaService } from 'src/shared/service/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
+  imports: [UserModule],
   controllers: [CategoryController],
   providers: [
     CategoryService,
     CategoryRepository,
     CategoryUseCase,
-    PrismaService
+    PrismaService,
+    JwtService
   ],
   exports: [CategoryService]
 })

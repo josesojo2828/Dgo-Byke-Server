@@ -121,17 +121,31 @@ model CyclistProfile {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  birthDate        DateTime
-  bloodType        String?
-  emergencyContact String?
-  emergencyPhone   String?
+  // Datos Biométricos (Los sacamos del JSON para mejor tipado)
+  weight     Float? // en kg
+  height     Float? // en cm (o int si prefieres)
+  jerseySize String? // XS, S, M, L, XL
 
+  // Datos Médicos / Emergencia
+  bloodType             String?
+  allergies             String?
+  emergencyContactName  String? // Coincide con el form
+  emergencyContactPhone String? // Coincide con el form
+
+  // Otros
+  teamName  String?
+  birthDate DateTime? // No estaba en el form, pero útil tenerlo
+
+  // Stats calculados (FTP, VO2Max) se quedan en JSON
   stats Json? @db.JsonB
 
-  // RELACIÓN NUEVA: Un ciclista tiene varias bicis
-  bicycles Bicycle[]
-
+  // Relaciones
+  bicycles       Bicycle[]
   participations RaceParticipant[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Tu Soft Delete
 }
 
 /// Inventario de bicicletas del usuario
@@ -182,6 +196,10 @@ model RaceParticipant {
   rank      Int?
 
   registeredAt DateTime @default(now())
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   events      RaceEvent[]
   raceTimings RaceTiming[]
@@ -325,6 +343,10 @@ model RaceEvent {
   hash        String? // Hash opcional para validar que no fue alterado
   raceTimings RaceTiming[]
 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
   @@index([raceId, timestamp])
 }
 
@@ -346,8 +368,9 @@ model RaceTiming {
 
   recordedAt DateTime // Hora exacta del paso
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 // --------------------------------------------------------
@@ -370,6 +393,10 @@ model OrganizationMember {
   isActive Boolean  @default(true)
   joinedAt DateTime @default(now())
 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
   @@unique([userId, organizationId])
 }
 
@@ -389,8 +416,9 @@ model Checkpoint {
 
   timings RaceTiming[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 /// Roles Dinamicos (RBAC)
@@ -402,8 +430,9 @@ model Role {
   permissions RolePermission[]
   users       UserRole[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 /// Permisos del sistema
@@ -414,8 +443,9 @@ model Permission {
 
   roles RolePermission[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 /// Tabla pivote Role-Permission
@@ -427,6 +457,10 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   assignedAt DateTime @default(now())
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@id([roleId, permissionId])
 }
@@ -440,6 +474,10 @@ model UserRole {
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   assignedAt DateTime @default(now())
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@id([userId, roleId])
 }
@@ -460,8 +498,9 @@ model Payment {
   transactionId String? // ID externo de la pasarela (Stripe, Paypal)
   metadata      Json?   @db.JsonB
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 // --------------------------------------------------------
@@ -486,5 +525,7 @@ model AuditLog {
   ipAddress String
   userAgent String?
 
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }

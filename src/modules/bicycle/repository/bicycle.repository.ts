@@ -23,7 +23,7 @@ export class BicycleRepository {
       skip,
       take,
       cursor,
-      where,
+      where: { ...where, deletedAt: null },
       orderBy,
     });
   }
@@ -41,10 +41,10 @@ export class BicycleRepository {
   }
 
   async remove(id: string) {
-    return this.prisma.bicycle.delete({ where: { id } });
+    return this.prisma.bicycle.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async count(where?: Prisma.BicycleWhereInput) {
-    return this.prisma.bicycle.count({ where });
+    return this.prisma.bicycle.count({ where: { ...where, deletedAt: null } });
   }
 }

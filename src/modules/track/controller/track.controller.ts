@@ -5,9 +5,10 @@ import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
+import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 
 @Controller('tracks')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(SessionAuthGuard, PermissionsGuard)
 export class TrackController {
   constructor(private readonly service: TrackService) { }
 

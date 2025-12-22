@@ -23,7 +23,7 @@ export class ParticipantRepository {
       skip,
       take,
       cursor,
-      where,
+      where: { ...where, deletedAt: null },
       orderBy,
     });
   }
@@ -41,10 +41,10 @@ export class ParticipantRepository {
   }
 
   async remove(id: string) {
-    return this.prisma.raceParticipant.delete({ where: { id } });
+    return this.prisma.raceParticipant.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async count(where?: Prisma.RaceParticipantWhereInput) {
-    return this.prisma.raceParticipant.count({ where });
+    return this.prisma.raceParticipant.count({ where: { ...where, deletedAt: null } });
   }
 }

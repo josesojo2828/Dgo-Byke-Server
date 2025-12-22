@@ -24,7 +24,7 @@ export class OrganizationMemberRepository {
             skip,
             take,
             cursor,
-            where,
+            where: { ...where, deletedAt: null },
             orderBy,
         });
     }
@@ -53,10 +53,10 @@ export class OrganizationMemberRepository {
     }
 
     async remove(id: string) {
-        return this.prisma.organizationMember.delete({ where: { id } });
+        return this.prisma.organizationMember.update({ where: { id }, data: { deletedAt: new Date() } });
     }
 
     async count(where?: Prisma.OrganizationMemberWhereInput) {
-        return this.prisma.organizationMember.count({ where });
+        return this.prisma.organizationMember.count({ where: { ...where, deletedAt: null } });
     }
 }

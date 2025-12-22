@@ -6,9 +6,10 @@ import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
+import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 
 @Controller('race-timing')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(SessionAuthGuard, PermissionsGuard)
 export class RaceTimingController {
     constructor(private readonly service: RaceTimingService) { }
 

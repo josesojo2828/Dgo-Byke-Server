@@ -23,7 +23,7 @@ export class OrganizationRepository {
       skip,
       take,
       cursor,
-      where,
+      where: { ...where, deletedAt: null },
       orderBy,
     });
   }
@@ -41,10 +41,10 @@ export class OrganizationRepository {
   }
 
   async remove(id: string) {
-    return this.prisma.organization.delete({ where: { id } });
+    return this.prisma.organization.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async count(where?: TOrganizationWhere) {
-    return this.prisma.organization.count({ where });
+    return this.prisma.organization.count({ where: { ...where, deletedAt: null } });
   }
 }

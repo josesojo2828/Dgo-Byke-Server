@@ -9,14 +9,18 @@ import { TrackController } from './controller/track.controller';
 import { TrackRepository } from './repository/track.repository';
 import { TrackUseCase } from './usecase/track.usecase';
 import { PrismaService } from 'src/shared/service/prisma.service';
+import { UserModule } from 'src/modules/user/user.module';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
+  imports: [UserModule],
   controllers: [TrackController],
   providers: [
     TrackService,
     TrackRepository,
     TrackUseCase,
-    PrismaService
+    PrismaService,
+    JwtService
   ],
   exports: [TrackService]
 })

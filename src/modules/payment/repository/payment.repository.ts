@@ -23,7 +23,7 @@ export class PaymentRepository {
       skip,
       take,
       cursor,
-      where,
+      where: { ...where, deletedAt: null },
       orderBy,
     });
   }
@@ -41,10 +41,10 @@ export class PaymentRepository {
   }
 
   async remove(id: string) {
-    return this.prisma.payment.delete({ where: { id } });
+    return this.prisma.payment.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   async count(where?: Prisma.PaymentWhereInput) {
-    return this.prisma.payment.count({ where });
+    return this.prisma.payment.count({ where: { ...where, deletedAt: null } });
   }
 }

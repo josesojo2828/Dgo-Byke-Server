@@ -4,7 +4,8 @@ import { IsString, IsNotEmpty, IsEnum, IsOptional, IsObject, IsUUID, IsBoolean }
 import { BikeType } from 'src/shared/types/system.type';
 
 export class CreateBicycleDto {
-  @IsUUID('4', { message: 'Debes especificar un perfil de ciclista válido' })
+  // @IsUUID('4', { message: 'Debes especificar un perfil de ciclista válido' })
+  @IsString({ message: 'Debes especificar un perfil de ciclista válido' })
   cyclistProfileId: string;
 
   @IsString({ message: 'La marca es obligatoria' })

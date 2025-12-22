@@ -9,14 +9,18 @@ import { ParticipantController } from './controller/participant.controller';
 import { ParticipantRepository } from './repository/participant.repository';
 import { ParticipantUseCase } from './usecase/participant.usecase';
 import { PrismaService } from 'src/shared/service/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
+  imports: [UserModule],
   controllers: [ParticipantController],
   providers: [
     ParticipantService,
     ParticipantRepository,
     ParticipantUseCase,
-    PrismaService
+    PrismaService,
+    JwtService
   ],
   exports: [ParticipantService]
 })
