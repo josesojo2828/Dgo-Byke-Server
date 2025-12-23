@@ -2,13 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { CreateRaceDto, UpdateRaceDto, TRaceWhere, TRaceUniqueId } from '../interface/race.dto';
+import { TRaceDetailInclude, TRaceListInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class RaceRepository {
   constructor(private readonly prisma: PrismaService) { }
 
+  async createWithRelations(data: Prisma.RaceCreateInput) {
+    return this.prisma.race.create({ data });
+  }
+
+  // Mantenemos el anterior por compatibilidad si se usa en otro lado
   async create(data: CreateRaceDto) {
-    return this.prisma.race.create({ data: data as unknown as Prisma.RaceUncheckedCreateInput });
+    // ... lógica anterior
+    return this.prisma.race.create({ data: data as any });
   }
 
   async findAll(params?: {
@@ -23,17 +30,18 @@ export class RaceRepository {
       skip,
       take,
       cursor,
+      include: TRaceListInclude, // <--- CAMBIO CLAVE: Usamos el include ligero para listas
       where: { ...where, deletedAt: null },
       orderBy,
     });
   }
 
   async findOne(id: string) {
-    return this.prisma.race.findUnique({ where: { id } });
+    // Para el detalle usamos el pesado
+    return this.prisma.race.findUnique({ where: { id }, include: TRaceDetailInclude });
   }
-
   async findUnique(where: TRaceUniqueId) {
-    return this.prisma.race.findUnique({ where });
+    return this.prisma.race.findUnique({ where, include: TRaceDetailInclude });
   }
 
   async update(id: string, data: UpdateRaceDto) {

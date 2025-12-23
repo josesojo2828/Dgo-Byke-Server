@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { RaceService } from '../service/race.service';
 import { CreateRaceDto, UpdateRaceDto } from '../interface/race.dto';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
@@ -14,8 +14,8 @@ export class RaceController {
 
   @Post('v1')
   @RequirePermissions(SystemPermissions.Races.Create)
-  create(@Body() createDto: CreateRaceDto) {
-    return this.service.create(createDto);
+  create(@Body() createDto: CreateRaceDto, @Req() req: any) {
+    return this.service.create(createDto, req.user);
   }
 
   @Get('v1')

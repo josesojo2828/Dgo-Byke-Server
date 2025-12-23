@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Prisma } from '@prisma/client';
-import { IsString, IsNotEmpty, IsDateString, IsEnum, IsUUID, IsOptional, IsInt, IsNumber, Min } from 'class-validator';
+import { IsString, IsNotEmpty, IsDateString, IsEnum, IsUUID, IsOptional, IsInt, IsNumber, Min, IsArray } from 'class-validator';
 import { RaceType, RaceStatus } from 'src/shared/types/system.type';
 
 export class CreateRaceDto {
@@ -9,7 +9,7 @@ export class CreateRaceDto {
   name: string;
 
   @IsDateString({}, { message: 'La fecha debe tener formato ISO 8601' })
-  date: string; // Se recibe como string desde el front
+  date: string;
 
   @IsEnum(RaceType, { message: 'Tipo de carrera inválido' })
   type: RaceType;
@@ -20,29 +20,31 @@ export class CreateRaceDto {
   @IsUUID('4', { message: 'Pista inválida' })
   trackId: string;
 
-  // Nota: creatorId se suele sacar del Token JWT, no del body, pero lo dejo opcional por si acaso
+  // --- NUEVO: Array de IDs de categorías para asignarlas de una vez ---
   @IsOptional()
-  @IsUUID()
-  creatorId?: string;
+  @IsArray()
+  @IsUUID('4', { each: true })
+  categoryIds?: string[];
 
+  // Opcionales configuración
   @IsOptional()
-  @IsInt({ message: 'Las vueltas deben ser un número entero' })
+  @IsInt()
   @Min(1)
   laps?: number;
 
   @IsOptional()
-  @IsNumber({}, { message: 'El precio debe ser un número' })
+  @IsNumber()
   price?: number;
-}
-
-export class UpdateRaceDto extends PartialType(CreateRaceDto) {
-  @IsOptional()
-  @IsEnum(RaceStatus, { message: 'Estado de carrera inválido' })
-  status?: RaceStatus;
 
   @IsOptional()
   @IsString()
   locationName?: string;
+}
+
+export class UpdateRaceDto extends PartialType(CreateRaceDto) {
+  @IsOptional()
+  @IsEnum(RaceStatus)
+  status?: RaceStatus;
 }
 
 export type TRaceCreate = Prisma.RaceCreateInput;
