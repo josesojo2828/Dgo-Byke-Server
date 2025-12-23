@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
-import { CreateParticipantDto, UpdateParticipantDto } from '../interface/participant.dto';
+import { UpdateParticipantDto, TRaceParticipantWhere, TRaceParticipantCreate } from '../interface/participant.dto';
+import { TRaceParticipantDetailInclude, TRaceParticipantListInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class ParticipantRepository {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(data: CreateParticipantDto) {
+  async create(data: TRaceParticipantCreate) {
     return this.prisma.raceParticipant.create({ data });
   }
 
@@ -15,7 +16,7 @@ export class ParticipantRepository {
     skip?: number;
     take?: number;
     cursor?: Prisma.RaceParticipantWhereUniqueInput;
-    where?: Prisma.RaceParticipantWhereInput;
+    where?: TRaceParticipantWhere;
     orderBy?: Prisma.RaceParticipantOrderByWithRelationInput;
   }) {
     const { skip, take, cursor, where, orderBy } = params || {};
@@ -23,17 +24,18 @@ export class ParticipantRepository {
       skip,
       take,
       cursor,
+      include: TRaceParticipantListInclude,
       where: { ...where, deletedAt: null },
       orderBy,
     });
   }
 
   async findOne(id: string) {
-    return this.prisma.raceParticipant.findUnique({ where: { id } });
+    return this.prisma.raceParticipant.findUnique({ where: { id }, include: TRaceParticipantDetailInclude });
   }
 
   async findUnique(where: Prisma.RaceParticipantWhereUniqueInput) {
-    return this.prisma.raceParticipant.findUnique({ where });
+    return this.prisma.raceParticipant.findUnique({ where, include: TRaceParticipantDetailInclude });
   }
 
   async update(id: string, data: UpdateParticipantDto) {

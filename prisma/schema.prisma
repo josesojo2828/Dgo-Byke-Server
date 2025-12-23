@@ -188,7 +188,7 @@ model RaceParticipant {
   bicycle   Bicycle? @relation(fields: [bicycleId], references: [id])
 
   categoryAssignedId String?
-  bibNumber          Int
+  bibNumber          Int?
   hasPaid            Boolean @default(false)
   status             String?
 

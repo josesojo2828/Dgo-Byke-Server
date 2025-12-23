@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ParticipantRepository } from '../repository/participant.repository';
-import { CreateParticipantDto, UpdateParticipantDto } from '../interface/participant.dto';
+import { CreateParticipantDto, TRaceParticipantCreate, TRaceParticipantWhere, UpdateParticipantDto } from '../interface/participant.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
+import { UserService } from 'src/modules/user/service/user.service';
+import { BusinessLogicException } from 'src/shared/error';
 
 @Injectable()
 export class ParticipantService {
   constructor(
     private readonly repository: ParticipantRepository,
+    private readonly userService: UserService,
     private readonly eventEmitter: EventEmitter2
   ) { }
 
@@ -22,8 +25,20 @@ export class ParticipantService {
       }),
     );
 
+    // verificar si el ciclista ya tiene un perfil
+    const profile = await this.userService.findOne(createDto.profileId);
+    if (!profile || !profile.cyclistProfile) throw new BusinessLogicException('Debes crear un perfil de ciclista primero');
+
+    const dataToCreate: TRaceParticipantCreate = {
+      profile: { connect: { id: profile.cyclistProfile.id } },
+      race: { connect: { id: createDto.raceId } },
+    };
+
+    console.log('#########################')
+    console.log(dataToCreate);
+
     // 2. Repository Logic
-    const result = await this.repository.create(createDto);
+    const result = await this.repository.create(dataToCreate);
 
     // 3. Post-Event
     this.eventEmitter.emit(
@@ -39,7 +54,16 @@ export class ParticipantService {
   }
 
   async findAll(params?: any) {
-    return this.repository.findAll(params);
+    const where: TRaceParticipantWhere[] = [];
+
+
+    if (params?.raceId) {
+      where.push({ raceId: params.raceId });
+    }
+
+    return this.repository.findAll({ 
+      where: where.length > 0 ? { OR: where } : undefined,
+    });
   }
 
   async findOne(id: string) {

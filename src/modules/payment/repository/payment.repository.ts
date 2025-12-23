@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { CreatePaymentDto, UpdatePaymentDto } from '../interface/payment.dto';
+import { TPaymentListInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class PaymentRepository {
@@ -23,17 +24,18 @@ export class PaymentRepository {
       skip,
       take,
       cursor,
+      include: TPaymentListInclude,
       where: { ...where, deletedAt: null },
       orderBy,
     });
   }
 
   async findOne(id: string) {
-    return this.prisma.payment.findUnique({ where: { id } });
+    return this.prisma.payment.findUnique({ where: { id },include: TPaymentListInclude });
   }
 
   async findUnique(where: Prisma.PaymentWhereUniqueInput) {
-    return this.prisma.payment.findUnique({ where });
+    return this.prisma.payment.findUnique({ where,include: TPaymentListInclude });
   }
 
   async update(id: string, data: UpdatePaymentDto) {

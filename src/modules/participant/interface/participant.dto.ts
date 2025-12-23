@@ -6,23 +6,8 @@ export class CreateParticipantDto {
   @IsUUID('4', { message: 'ID de carrera inválido' })
   raceId: string;
 
-  @IsUUID('4', { message: 'ID de perfil de ciclista inválido' })
+  @IsString({ message: 'ID de perfil de ciclista inválido' })
   profileId: string;
-
-  @IsInt({ message: 'El dorsal (número) es obligatorio' })
-  bibNumber: number;
-
-  @IsOptional()
-  @IsUUID('4', { message: 'ID de bicicleta inválido' })
-  bicycleId?: string;
-
-  @IsOptional()
-  @IsUUID('4', { message: 'ID de categoría inválido' })
-  categoryAssignedId?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  hasPaid?: boolean;
 }
 
 export class UpdateParticipantDto extends PartialType(CreateParticipantDto) {

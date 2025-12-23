@@ -143,17 +143,17 @@ export const TRaceListInclude: Prisma.RaceInclude = {
 
 // 🔵 DETALLE: Configuración completa para el Dashboard
 export const TRaceDetailInclude: Prisma.RaceInclude = {
-    organization: true,
-    track: true,
-    categories: true, // Las categorías son pocas (5-20), seguro traerlas
-    creator: { select: { fullName: true, email: true } },
-
-    // ⚠️ EXCLUIDOS DELIBERADAMENTE:
-    // participants: false -> Se piden en endpoint /races/:id/participants
-    // liveEvents: false   -> Se piden en endpoint /races/:id/live
-
+    organization: { select: { name: true, logoUrl: true } },
+    // IMPORTANTE: Traer geoData y checkpoints para pintar el mapa
+    track: {
+        include: {
+            checkpoints: true
+        }
+    },
+    categories: true, // Para el select de inscripción
+    creator: { select: { fullName: true } },
     _count: {
-        select: { participants: true, liveEvents: true, timings: true, payments: true }
+        select: { participants: true, liveEvents: true }
     }
 };
 
@@ -164,10 +164,18 @@ export type TRaceParticipantInclude = Prisma.RaceParticipantInclude;
 
 export const TRaceParticipantListInclude: Prisma.RaceParticipantInclude = {
     profile: {
-        include: { user: { select: { fullName: true, avatarUrl: true, email: true } } }
+        include: {
+            user: {
+                select: {
+                    fullName: true, avatarUrl: true, email: true,
+                    cyclistProfile: true },
+                }
+            },
+            // AGREGAMOS ESTO: Para obtener género y edad
     },
-    bicycle: { select: { brand: true, model: true } }, // Saber con qué corre
-    race: { select: { name: true } } // Por si listamos historial del usuario
+    bicycle: { select: { brand: true, model: true } },
+    race: { select: { name: true } },
+    _count: true // Asegúrate de traer la categoría
 };
 
 export const TRaceParticipantDetailInclude: Prisma.RaceParticipantInclude = {
@@ -238,8 +246,12 @@ export const TRaceTimingListInclude: Prisma.RaceTimingInclude = {
 export type TPaymentInclude = Prisma.PaymentInclude;
 
 export const TPaymentListInclude: Prisma.PaymentInclude = {
-    user: { select: { fullName: true, email: true } },
-    race: { select: { name: true } }
+    race: {
+        include: TRaceDetailInclude
+    },
+    user: {
+        include: TUserDetailInclude
+    }
 };
 
 // =============================================================================

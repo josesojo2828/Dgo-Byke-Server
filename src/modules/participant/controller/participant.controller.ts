@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { ParticipantService } from '../service/participant.service';
 import { CreateParticipantDto, UpdateParticipantDto } from '../interface/participant.dto';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
@@ -20,8 +20,12 @@ export class ParticipantController {
 
   @Get('v1')
   @RequirePermissions(SystemPermissions.Participants.Read)
-  findAll() {
-    return this.service.findAll();
+  // Agregamos @Query para capturar ?raceId=...
+  findAll(@Query('raceId') raceId?: string) {
+    // Pasamos el filtro al servicio
+    return this.service.findAll({
+      where: raceId ? { raceId } : undefined,
+    });
   }
 
   @Get('v1/:id')

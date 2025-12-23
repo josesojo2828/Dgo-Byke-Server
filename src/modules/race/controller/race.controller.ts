@@ -12,6 +12,12 @@ import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 export class RaceController {
   constructor(private readonly service: RaceService) { }
 
+  @Get('v1/dashboard/stats')
+  @RequirePermissions(SystemPermissions.Races.Read)
+  getDashboardStats() {
+    return this.service.getDashboardStats();
+  }
+
   @Post('v1')
   @RequirePermissions(SystemPermissions.Races.Create)
   create(@Body() createDto: CreateRaceDto, @Req() req: any) {

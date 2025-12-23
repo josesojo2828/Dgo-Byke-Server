@@ -12,6 +12,11 @@ export class RaceService {
     private readonly eventEmitter: EventEmitter2
   ) { }
 
+  async getDashboardStats() {
+    const metrics = await this.repository.getDashboardMetrics();
+    return metrics;
+  }
+
   async create(createDto: CreateRaceDto, userSession: User) {
     // 1. Extraemos categoryIds para manejarlos aparte
     const { categoryIds, ...restDto } = createDto;
