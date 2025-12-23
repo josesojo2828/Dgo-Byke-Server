@@ -1,16 +1,54 @@
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationMemberRepository } from '../repository/organization-member.repository';
 import { CreateOrganizationMemberDto, UpdateOrganizationMemberDto } from '../interface/organization-member.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
+import { PrismaService } from 'src/shared/service/prisma.service';
 
 @Injectable()
 export class OrganizationMemberService {
     constructor(
         private readonly repository: OrganizationMemberRepository,
-        private readonly eventEmitter: EventEmitter2
+        private readonly eventEmitter: EventEmitter2,
+        private readonly prisma: PrismaService
     ) { }
+
+    // Método específico para la vista del Organizador
+    async findAllByOrganizer(userId: string, search?: string) {
+        // 1. Identificar la organización del usuario logueado
+        const membership = await this.prisma.organizationMember.findFirst({
+            where: {
+                userId,
+                role: { in: ['OWNER', 'ADMIN'] }
+            }
+        });
+
+        if (!membership) {
+            throw new ForbiddenException('No tienes una organización asociada.');
+        }
+
+        // 2. Construir filtro de búsqueda si existe
+        const where: any = {
+            organizationId: membership.organizationId,
+            deletedAt: null
+        };
+
+        if (search) {
+            where.user = {
+                OR: [
+                    { fullName: { contains: search, mode: 'insensitive' } },
+                    { email: { contains: search, mode: 'insensitive' } }
+                ]
+            };
+        }
+
+        // 3. Consultar miembros incluyendo datos del usuario
+        return this.repository.findAll({
+            where,
+            orderBy: { createdAt: 'desc' }
+        });
+    }
 
     async create(createDto: CreateOrganizationMemberDto) {
         // Validate duplicates

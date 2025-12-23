@@ -29,6 +29,9 @@ export class ParticipantService {
     const profile = await this.userService.findOne(createDto.profileId);
     if (!profile || !profile.cyclistProfile) throw new BusinessLogicException('Debes crear un perfil de ciclista primero');
 
+    const found = await this.repository.findAll({ where: { profileId: createDto.profileId, raceId: createDto.raceId } });
+    if (found) throw new BusinessLogicException('El ciclista ya tiene un perfil asociado a esta carrera');
+
     const dataToCreate: TRaceParticipantCreate = {
       profile: { connect: { id: profile.cyclistProfile.id } },
       race: { connect: { id: createDto.raceId } },

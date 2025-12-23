@@ -47,8 +47,6 @@ export class DashboardService {
     public async getMenu(userPermissions: string[], userRole: SystemRole): Promise<MenuItemDto[]> {
         const permissionsSet = new Set(userPermissions);
 
-        console.log(userPermissions);
-
         const basePath = ROLE_ROOT_PATHS[userRole] || '/app';
         return this.filterMenuRecursive(MASTER_MENU, permissionsSet, basePath);
     }

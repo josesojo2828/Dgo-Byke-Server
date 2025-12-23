@@ -13,13 +13,12 @@ export class ParticipantController {
   constructor(private readonly service: ParticipantService) { }
 
   @Post('v1')
-  @RequirePermissions(SystemPermissions.Participants.Create)
+  // @RequirePermissions(SystemPermissions.Participants.Create)
   create(@Body() createDto: CreateParticipantDto) {
     return this.service.create(createDto);
   }
 
   @Get('v1')
-  @RequirePermissions(SystemPermissions.Participants.Read)
   // Agregamos @Query para capturar ?raceId=...
   findAll(@Query('raceId') raceId?: string) {
     // Pasamos el filtro al servicio
@@ -29,7 +28,6 @@ export class ParticipantController {
   }
 
   @Get('v1/:id')
-  @RequirePermissions(SystemPermissions.Participants.Read)
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }

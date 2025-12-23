@@ -5,11 +5,62 @@ import { SessionAuthGuard } from '../../auth/guard/session-auth-guard';
 import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 
 @Controller('users')
 @UseGuards(SessionAuthGuard, PermissionsGuard)
 export class UserController {
   constructor(private readonly service: UserService) { }
+
+  @Get('v1/cyclist/my-organization')
+  async getMyOrganization(@CurrentUser() user: any) {
+    return this.service.getMyOrganizationDetail(user.id);
+  }
+
+  @Post('v1/cyclist/create-org')
+  async createOrg(@CurrentUser() user: any, @Body() body: any) {
+    return this.service.createOrganization(user.id, body);
+  }
+
+  @Get('v1/cyclist/organization-check')
+  async checkOrgStatus(@CurrentUser() user: any) {
+    return this.service.getMyOrganizationStatus(user.id);
+  }
+
+  @Get('v1/cyclist/results')
+  async getCyclistResults(@CurrentUser() user: any) {
+    return this.service.getCyclistResults(user.id);
+  }
+
+  @Get('v1/cyclist/profile')
+  async getFullProfile(@CurrentUser() user: any) {
+    return this.service.getFullProfile(user.id);
+  }
+
+  @Patch('v1/cyclist/profile')
+  async updateFullProfile(@CurrentUser() user: any, @Body() updateDto: any) {
+    return this.service.updateFullProfile(user.id, updateDto);
+  }
+
+  @Get('v1/cyclist/garage')
+  async getMyGarage(@CurrentUser() user: any) {
+    return this.service.getMyGarage(user.id);
+  }
+
+  @Post('v1/cyclist/garage')
+  async createMyBike(@CurrentUser() user: any, @Body() body: any) {
+    return this.service.createMyBike(user.id, body);
+  }
+
+  @Get('v1/cyclist/dashboard')
+  async getCyclistDashboard(@CurrentUser() user: any) {
+    return this.service.getCyclistDashboard(user.id);
+  }
+
+  @Get('v1/cyclist/tickets')
+  async getMyTickets(@CurrentUser() user: any) {
+    return this.service.getMyTickets(user.id);
+  }
 
   @Get('v1/admins') // Este es el endpoint que usa tu hook useAdminsModule
   @RequirePermissions(SystemPermissions.System.Manage)

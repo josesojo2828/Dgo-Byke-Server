@@ -6,10 +6,19 @@ import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
 import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 
 @Controller('organizations')
 export class OrganizationController {
   constructor(private readonly service: OrganizationService) { }
+
+  @Get('v1/me')
+  @UseGuards(SessionAuthGuard)
+  // No requiere permiso de sistema específico, solo estar logueado. 
+  // El servicio valida si tiene org.
+  async getMyOrganization(@CurrentUser() user: any) {
+    return this.service.findByOwner(user.id);
+  }
 
   // ============================================================
   // 1. OBTENER INFO PÚBLICA (Para la Landing Page)
@@ -46,7 +55,6 @@ export class OrganizationController {
 
   @Get('v1')
   @UseGuards(SessionAuthGuard)
-  @RequirePermissions(SystemPermissions.Organizations.Read)
   findAll() {
     return this.service.findAll();
   }

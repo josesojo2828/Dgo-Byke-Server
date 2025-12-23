@@ -1,5 +1,5 @@
 
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { OrganizationMemberService } from '../service/organization-member.service';
 import { CreateOrganizationMemberDto, UpdateOrganizationMemberDto } from '../interface/organization-member.dto';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
@@ -7,11 +7,21 @@ import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
 import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 
 @Controller('organization-members')
 @UseGuards(SessionAuthGuard, PermissionsGuard)
 export class OrganizationMemberController {
     constructor(private readonly service: OrganizationMemberService) { }
+
+    @Get('v1/me/members')
+    // No requiere permiso global de sistema, el servicio valida la autoría
+    findMyMembers(
+        @CurrentUser() user: any,
+        @Query('search') search?: string
+    ) {
+        return this.service.findAllByOrganizer(user.id, search);
+    }
 
     @Post('v1')
     @RequirePermissions(SystemPermissions.OrganizationMembers.Create)

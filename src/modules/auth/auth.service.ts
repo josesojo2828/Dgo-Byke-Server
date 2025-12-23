@@ -16,6 +16,7 @@ export class AuthService {
 
     async validateUser(email: string, pass: string) {
         const user = await this.userService.findByEmail(email);
+        console.log(user);
         if (user && (await bcrypt.compare(pass, user.password))) {
             const { password, ...result } = user;
             return result;
@@ -26,18 +27,13 @@ export class AuthService {
     async login(loginDto: LoginDto) {
         const user = await this.validateUser(loginDto.email, loginDto.password);
         if (!user) {
-            // throw new UnauthorizedException('Credenciales inválidas');
             return { error: 'Credenciales malas (Prueba)' };
         }
 
-        console.log(user);
-
         const role = (user.roles[0] as any).role.name;
         const roleName = role === 'SUPER_ADMIN' ? 'ADMIN' : role;
-
         const list = this.userService.extractPermissions(user);
         const slide = await this.dashboardService.getMenu(list, roleName);
-
         const payload: IJwtPayload = { email: user.email, sub: user.id };
         const token = this.jwtService.sign(payload, {
             secret: 'CLAVE_TEMPORAL_DURA'

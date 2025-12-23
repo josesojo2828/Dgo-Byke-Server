@@ -164,4 +164,23 @@ export class OrganizationService {
 
     return { success: true, orgName: org.name };
   }
+
+  async findByOwner(userId: string) {
+    // Buscamos una org donde este usuario sea miembro con rol administrativo
+    // Asumiendo que existe la relación 'memberships' en User o 'members' en Organization
+    return this.prisma.organization.findFirst({
+      where: {
+        members: {
+          some: {
+            userId: userId,
+            // Ajusta los roles según tu enum OrgRole (ej: OWNER, ADMIN)
+            role: { in: ['OWNER', 'ADMIN'] }
+          }
+        }
+      },
+      include: {
+        members: true // Opcional: traer miembros
+      }
+    });
+  }
 }

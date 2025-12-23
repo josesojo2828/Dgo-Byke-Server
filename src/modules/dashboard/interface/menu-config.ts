@@ -8,11 +8,31 @@ export interface MenuConfigItem extends MenuItemDto {
 
 // DEFINICIÓN DEL MENÚ MAESTRO COMPLETO
 export const MASTER_MENU: MenuConfigItem[] = [
+
     // 1. DASHBOARD (General)
     {
         label: 'Panel de Control',
         route: '/',
         icon: 'LayoutDashboard',
+    },
+    {
+        label: 'Gestión',
+        route: '/organizer',
+        icon: 'FolderCog', // Icono de sección (opcional)
+        children: [
+            {
+                label: 'Mis Carreras',
+                route: '/my-races', // Se convertirá en /organizer/my-races
+                icon: 'Calendar',
+                requiredPermission: 'races.read_own' // Permiso específico
+            },
+            {
+                label: 'Participantes',
+                route: '/members',
+                icon: 'Users',
+                requiredPermission: 'members.read'
+            }
+        ]
     },
 
     // 2. GESTIÓN DE CARRERAS (Core)

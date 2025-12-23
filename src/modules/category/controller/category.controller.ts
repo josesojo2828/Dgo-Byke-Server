@@ -19,7 +19,6 @@ export class CategoryController {
   }
 
   @Get('v1')
-  @RequirePermissions(SystemPermissions.Categories.Read)
   findAll() {
     return this.service.findAll();
   }

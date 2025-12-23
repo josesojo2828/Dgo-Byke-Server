@@ -63,9 +63,6 @@ export class BicycleController {
     const profile = await this.profileService.findOneByUserId(userId);
     if (!profile) throw new BusinessLogicException('Debes crear un perfil de ciclista primero');
 
-    console.log(profile);
-
-    // Forzamos el ID del perfil al del usuario logueado por seguridad
     createDto.cyclistProfileId = profile.id;
 
     return this.service.create(createDto);
