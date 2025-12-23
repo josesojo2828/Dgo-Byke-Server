@@ -88,42 +88,6 @@ async function bootstrap() {
         SystemPermissions.Timing.Read,
     ]);
 
-    // 4. Create Super Admin User via Service (Hashing included)
-    const adminEmail = 'admin@dgobyke.com';
-    const existingAdmin = await userService.findByEmail(adminEmail);
-
-    let adminUserId = existingAdmin?.id;
-
-    if (!existingAdmin) {
-        const newAdmin = await userService.create({
-            email: adminEmail,
-            // Password will be hashed by UserService now
-            password: 'abc.12345',
-            fullName: 'Super Admin',
-            isActive: true,
-            // Any other required fields
-        } as CreateUserDto);
-        adminUserId = newAdmin.id;
-        console.log(`Super Admin user created: ${adminEmail} via UserService`);
-    } else {
-        console.log(`Super Admin user already exists: ${adminEmail}`);
-    }
-
-    // Assign Role via Service
-    if (adminUserId) {
-        const superAdminRole = await prismaService.role.findUnique({ where: { name: 'SUPER_ADMIN' } });
-        if (superAdminRole) {
-            const hasRole = await prismaService.userRole.findUnique({
-                where: { userId_roleId: { userId: adminUserId, roleId: superAdminRole.id } }
-            });
-
-            if (!hasRole) {
-                await iamService.assignRoleToUser({ userId: adminUserId, roleId: superAdminRole.id });
-                console.log('Assigned SUPER_ADMIN role to user via IamService');
-            }
-        }
-    }
-
     await app.close();
 }
 

@@ -28,7 +28,7 @@ async function bootstrap() {
 
         // 3. Your Logic Here
         console.log('Fetching user count...');
-        const allUsers = await userService.findAll({ skip: 0, take: 10 });
+        const allUsers = await userService.findAll({  });
         console.log(`Found ${allUsers.length} users in the first page.`);
 
         // --- NEW: Generate OpenAPI Spec ---

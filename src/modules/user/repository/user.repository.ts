@@ -12,6 +12,25 @@ export class UserRepository {
     return this.prisma.user.create({ data });
   }
 
+  // Creación Transaccional: Crea el User y la entrada en UserRole al mismo tiempo
+  async createWithRole(userData: any, roleId: string) {
+    return this.prisma.user.create({
+      data: {
+        ...userData,
+        roles: {
+          create: {
+            roleId: roleId // Aquí prisma llena la tabla pivote 'UserRole'
+          }
+        }
+      },
+      include: {
+        roles: { // Devolvemos el rol para confirmar
+          include: { role: true }
+        }
+      }
+    });
+  }
+
   async findAll(params?: {
     skip?: number;
     take?: number;

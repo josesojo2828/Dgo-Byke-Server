@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { CreateUserDto, UpdateUserDto } from '../interface/user.dto';
 import { SessionAuthGuard } from '../../auth/guard/session-auth-guard';
@@ -11,6 +11,16 @@ import { SystemPermissions } from '../../iam/system-permissions';
 export class UserController {
   constructor(private readonly service: UserService) { }
 
+  @Get('v1/admins') // Este es el endpoint que usa tu hook useAdminsModule
+  @RequirePermissions(SystemPermissions.System.Manage)
+  findAdmins(
+    @Query('search') search?: string,
+    @Query('role') role?: string
+  ) {
+    // Reutilizamos el findAll pero pasando los filtros
+    return this.service.findAll({ search, role });
+  }
+
   @Post('v1')
   @RequirePermissions(SystemPermissions.Users.Create)
   create(@Body() createDto: CreateUserDto) {
@@ -18,9 +28,8 @@ export class UserController {
   }
 
   @Get('v1')
-  @RequirePermissions(SystemPermissions.Users.Read)
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query('search') search?: string) {
+    return this.service.findAll({ search });
   }
 
   @Get('v1/:id')

@@ -13,6 +13,37 @@ export class DashboardService {
         const entity = SystemPermissions;
     }
 
+    async getAdminStats() {
+        // 1. Contar usuarios por rol (RBAC)
+        const rolesCount = await this.prisma.role.findMany({
+            include: {
+                _count: { select: { users: true } }
+            }
+        });
+
+        // Mapear conteos
+        const superAdmins = rolesCount.find(r => r.name === 'Super Admin')?._count.users || 0;
+        const staff = rolesCount.reduce((acc, r) => acc + r._count.users, 0) - superAdmins; // Total - Super
+
+        // 2. Logs de Auditoría Recientes
+        const recentLogs = await this.prisma.auditLog.findMany({
+            take: 10,
+            orderBy: { createdAt: 'desc' },
+            include: { user: { select: { fullName: true } } }
+        });
+
+        return {
+            stats: { superAdmins, staff },
+            logs: recentLogs.map(l => ({
+                action: l.action,
+                user: l.user?.fullName || 'Sistema',
+                target: l.entityId, // O mapear entityType
+                createdAt: l.createdAt,
+                alert: l.action.includes('FAIL') || l.action.includes('DELETE')
+            }))
+        };
+    }
+
     public async getMenu(userPermissions: string[], userRole: SystemRole): Promise<MenuItemDto[]> {
         const permissionsSet = new Set(userPermissions);
 

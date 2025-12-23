@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CategoryRepository } from '../repository/category.repository';
-import { CreateCategoryDto, UpdateCategoryDto } from '../interface/category.dto';
+import { CreateCategoryDto, TCategoryCreate, UpdateCategoryDto } from '../interface/category.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
 
 @Injectable()
@@ -21,6 +21,13 @@ export class CategoryService {
         payload: createDto,
       }),
     );
+
+    const objectToCreate: TCategoryCreate = {
+      name: createDto.name,
+      minAge: createDto.minAge,
+      maxAge: createDto.maxAge,
+      gender: createDto.gender,
+    };
 
     // 2. Repository Logic
     const result = await this.repository.create(createDto);

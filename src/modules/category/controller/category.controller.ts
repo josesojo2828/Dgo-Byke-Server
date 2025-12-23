@@ -14,7 +14,7 @@ export class CategoryController {
 
   @Post('v1')
   @RequirePermissions(SystemPermissions.Categories.Create)
-  create(@Body() createDto: CreateCategoryDto) {
+  create(@Body() createDto: CreateCategoryDto) {  
     return this.service.create(createDto);
   }
 

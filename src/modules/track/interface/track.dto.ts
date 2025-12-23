@@ -32,8 +32,8 @@ export class CreateTrackDto {
   @Max(180)
   longitude: number;
 
-  @IsString()
-  organizationId: string;
+  // @IsString()
+  // organizationId: string;
 
   @IsOptional()
   description?: string

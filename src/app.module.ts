@@ -37,6 +37,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 import { SharedModule } from './shared/shared.module';
 import { JwtService } from '@nestjs/jwt';
+import { LogisticsModule } from './modules/logistics/logistic.module';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { JwtService } from '@nestjs/jwt';
     FilesModule,
     NotificationsModule,
     DashboardModule,
+    LogisticsModule,
   ],
   controllers: [
     AppController,

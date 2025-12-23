@@ -34,10 +34,11 @@ export class RaceService {
     const prismaCreateInput = {
       ...dataToCreate,
       // Si vienen categorías, las conectamos
-      categories: categoryIds ? {
-        connect: categoryIds.map(id => ({ id }))
-      } : undefined
     };
+
+    if(categoryIds && categoryIds.length > 0) {
+      prismaCreateInput.categories = { connect: categoryIds.map(id => ({ id })) };
+    }
 
     const result = await this.repository.createWithRelations(prismaCreateInput);
 

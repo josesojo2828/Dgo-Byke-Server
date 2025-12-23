@@ -34,9 +34,6 @@ export class ParticipantService {
       race: { connect: { id: createDto.raceId } },
     };
 
-    console.log('#########################')
-    console.log(dataToCreate);
-
     // 2. Repository Logic
     const result = await this.repository.create(dataToCreate);
 

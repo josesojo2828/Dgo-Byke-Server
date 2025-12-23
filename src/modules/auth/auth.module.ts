@@ -1,14 +1,9 @@
-/**
- * Auth Module
- * Responsabilidad: Gestionar la autenticación de usuarios (Login, Register, JWT Strategy).
- * Ej. Login con email/password y generación de Token JWT.
- */
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { PassportModule } from '@nestjs/passport';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt'; // NO importes JwtService aquí para providers
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { DashboardModule } from '../dashboard/dashboard.module';
@@ -17,18 +12,25 @@ import { DashboardModule } from '../dashboard/dashboard.module';
   imports: [
     DashboardModule,
     UserModule,
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    ConfigModule,
+
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'secretKey',
-        signOptions: { expiresIn: '60m' },
-      }),
       inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return {
+          secret: configService.get<string>('JWT_SECRET'),
+          signOptions: {
+            expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '1d') as any, 
+          },
+        };
+      },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy,JwtService],
-  exports: [AuthService]
+    providers: [AuthService, JwtStrategy], 
+  
+  exports: [AuthService, JwtModule, PassportModule]
 })
 export class AuthModule { }

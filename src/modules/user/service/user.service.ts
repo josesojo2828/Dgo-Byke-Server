@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserRepository } from '../repository/user.repository';
-import { CreateUserDto, TUserCreate, UpdateUserDto } from '../interface/user.dto';
+import { CreateUserDto, TUserCreate, TUserWhere, UpdateUserDto } from '../interface/user.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
 import { startOfMonth, subMonths, format, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -34,12 +34,20 @@ export class UserService {
       }),
     );
 
+    const existingUser = await this.repository.findByEmail(createDto.email);
+    if (existingUser) {
+      throw new ConflictException('El correo electrónico ya está registrado');
+    }
+
+    const { roleId, ...userData } = createDto;
+
     const objectCreate: TUserCreate = {
       email: createDto.email,
       password: createDto.password,
       fullName: createDto.fullName,
       isActive: true,
-      systemRole: createDto.systemRole,
+      // systemRole: createDto.systemRole,
+      // roles: { connect: {  } },
       phone: createDto.phone,
     };
 
@@ -48,7 +56,7 @@ export class UserService {
     }
 
     // 2. Repository Logic
-    const result = await this.repository.create(objectCreate);
+    const result = await this.repository.createWithRole(objectCreate, createDto.roleId);
 
     // 3. Post-Event
     this.eventEmitter.emit(
@@ -63,9 +71,43 @@ export class UserService {
     return result;
   }
 
-  async findAll(params?: any) {
-    // Basic FindAll - can be extended with events if needed (e.g. audit read)
-    return this.repository.findAll(params);
+  async findAll(params?: { search?: string; role?: string }) {
+    const { search, role } = params || {};
+
+    // 1. Filtro Base: No eliminados
+    const where: TUserWhere = {
+      deletedAt: null,
+    };
+
+    // 2. Búsqueda de Texto (Nombre o Email)
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // 3. Filtro por Rol (Relacional)
+    // "Busca usuarios donde ALGUNO (some) de sus roles tenga un nombre que coincida"
+    if (role && role !== 'ALL') {
+      // Normalizamos: Frontend manda 'SUPER_ADMIN', DB tiene 'Super Admin' o 'SUPER_ADMIN'
+      // Usamos contains/insensitive para ser flexibles
+      const roleName = role.replace('_', ' ');
+
+      where.roles = {
+        some: {
+          role: {
+            name: { contains: roleName, mode: 'insensitive' }
+          }
+        }
+      };
+    }
+
+    // 4. Llamada al Repositorio
+    return this.repository.findAll({
+      where,
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   async findOne(id: string) {

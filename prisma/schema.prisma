@@ -180,6 +180,8 @@ model RaceParticipant {
   raceId String
   race   Race   @relation(fields: [raceId], references: [id])
 
+  code   Int    @default(autoincrement())
+
   profileId String
   profile   CyclistProfile @relation(fields: [profileId], references: [id])
 

@@ -30,6 +30,8 @@ export class AuthService {
             return { error: 'Credenciales malas (Prueba)' };
         }
 
+        console.log(user);
+
         const role = (user.roles[0] as any).role.name;
         const roleName = role === 'SUPER_ADMIN' ? 'ADMIN' : role;
 
@@ -37,7 +39,9 @@ export class AuthService {
         const slide = await this.dashboardService.getMenu(list, roleName);
 
         const payload: IJwtPayload = { email: user.email, sub: user.id };
-        const token = this.jwtService.sign(payload)
+        const token = this.jwtService.sign(payload, {
+            secret: 'CLAVE_TEMPORAL_DURA'
+        });
         await this.userService.setToken(user.id, token);
         return {
             access_token: token,

@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Prisma } from '@prisma/client';
-import { IsString, IsInt, IsOptional, Min, Max, IsNotEmpty } from 'class-validator';
+import { IsString, IsInt, IsOptional, Min, Max, IsNotEmpty, IsArray, IsUUID } from 'class-validator';
 
 export class CreateCategoryDto {
   @IsString({ message: 'El nombre es obligatorio' })
@@ -20,6 +20,10 @@ export class CreateCategoryDto {
   @IsOptional()
   @IsString()
   gender?: string; // 'M', 'F', 'MIXTO'
+
+  @IsArray()
+  @IsUUID('4', { each: true }) // Valida que cada item sea un UUID
+  categoryIds: string[];
 }
 
 export class UpdateCategoryDto extends PartialType(CreateCategoryDto) { }

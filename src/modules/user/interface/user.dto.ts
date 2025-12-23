@@ -4,24 +4,22 @@ import { IsString, IsEmail, MinLength, IsOptional, IsEnum, IsBoolean, IsUUID } f
 import { SystemRole } from 'src/shared/types/system.type';
 
 export class CreateUserDto {
-  @IsEmail({}, { message: 'El correo electrónico no es válido' })
+  @IsString()
+  fullName: string;
+
+  @IsEmail({}, { message: 'El correo no es válido' })
   email: string;
 
-  @IsString({ message: 'La contraseña debe ser texto' })
+  @IsString()
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
   password: string;
 
-  @IsString({ message: 'El nombre completo es obligatorio' })
-  @MinLength(3, { message: 'El nombre es muy corto' })
-  fullName: string;
-
   @IsOptional()
-  @IsString({ message: 'El teléfono debe ser texto' })
+  @IsString()
   phone?: string;
 
-  @IsOptional()
-  @IsEnum(SystemRole, { message: 'El rol de sistema no es válido' })
-  systemRole?: SystemRole;
+  @IsUUID('4', { message: 'Debes seleccionar un rol válido' })
+  roleId: string; // Recibimos el ID del rol para relacionarlo
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
