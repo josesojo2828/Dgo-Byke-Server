@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { CreateCheckpointDto, UpdateCheckpointDto, TCheckpointWhere, TCheckpointUniqueId } from '../interface/checkpoint.dto';
+import { TCheckpointListInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class CheckpointRepository {
@@ -22,6 +23,7 @@ export class CheckpointRepository {
     return this.prisma.checkpoint.findMany({
       skip,
       take,
+      include: TCheckpointListInclude,
       cursor,
       where: { ...where, deletedAt: null },
       orderBy,
@@ -29,11 +31,11 @@ export class CheckpointRepository {
   }
 
   async findOne(id: string) {
-    return this.prisma.checkpoint.findUnique({ where: { id } });
+    return this.prisma.checkpoint.findUnique({ where: { id },include: TCheckpointListInclude, });
   }
 
   async findUnique(where: TCheckpointUniqueId) {
-    return this.prisma.checkpoint.findUnique({ where });
+    return this.prisma.checkpoint.findUnique({ where,include: TCheckpointListInclude, });
   }
 
   async update(id: string, data: UpdateCheckpointDto) {

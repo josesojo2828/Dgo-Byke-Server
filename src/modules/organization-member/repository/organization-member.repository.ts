@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { CreateOrganizationMemberDto, UpdateOrganizationMemberDto, TOrganizationMemberWhere, TOrganizationMemberUniqueId } from '../interface/organization-member.dto';
+import { TOrganizationMemberListInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class OrganizationMemberRepository {
@@ -24,6 +25,7 @@ export class OrganizationMemberRepository {
             skip,
             take,
             cursor,
+            include: TOrganizationMemberListInclude,
             where: { ...where, deletedAt: null },
             orderBy,
         });

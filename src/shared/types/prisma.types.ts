@@ -102,7 +102,8 @@ export type TTrackInclude = Prisma.TrackInclude;
 
 export const TTrackListInclude: Prisma.TrackInclude = {
     organization: { select: { name: true } },
-    _count: { select: { races: true } }
+    _count: { select: { races: true } },
+    checkpoints: { orderBy: { order: 'asc' } }, // Include checkpoints ordered
 };
 
 export const TTrackDetailInclude: Prisma.TrackInclude = {
@@ -207,7 +208,12 @@ export const TOrganizationMemberListInclude: Prisma.OrganizationMemberInclude = 
 export type TCheckpointInclude = Prisma.CheckpointInclude;
 
 export const TCheckpointListInclude: Prisma.CheckpointInclude = {
-    track: { select: { name: true } }
+    track: { select: { name: true } },
+    _count: {
+        select: {
+            timings: true,
+        }
+    },
 };
 
 // =============================================================================

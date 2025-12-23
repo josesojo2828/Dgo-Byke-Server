@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto } from '../interface/category.dto';
+import { TCategoryDetailInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class CategoryRepository {
@@ -23,6 +24,7 @@ export class CategoryRepository {
       skip,
       take,
       cursor,
+      include: TCategoryDetailInclude,
       where: { ...where, deletedAt: null },
       orderBy,
     });

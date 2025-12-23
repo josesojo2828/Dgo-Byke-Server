@@ -216,7 +216,7 @@ model Organization {
   description String?
   logoUrl     String?
 
-  inviteToken String?  @unique
+  inviteToken String? @unique
 
   // Relaciones
   members OrganizationMember[]
@@ -241,6 +241,11 @@ model Track {
   // GeoJSON o Array de coordenadas para dibujar el mapa
   // GeoJSON o Array de coordenadas para dibujar el mapa
   geoData Json @db.JsonB
+
+  // --- NUEVOS CAMPOS ---
+  latitude  Float @default(0) // Coordenada inicial / Punto de encuentro
+  longitude Float @default(0)
+  // ---------------------
 
   // Puntos de control en la ruta
   checkpoints Checkpoint[]

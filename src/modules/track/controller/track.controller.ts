@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { TrackService } from '../service/track.service';
 import { CreateTrackDto, UpdateTrackDto } from '../interface/track.dto';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
@@ -14,8 +14,8 @@ export class TrackController {
 
   @Post('v1')
   @RequirePermissions(SystemPermissions.Tracks.Create)
-  create(@Body() createDto: CreateTrackDto) {
-    return this.service.create(createDto);
+  create(@Body() createDto: CreateTrackDto, @Req() req: any) {
+    return this.service.create(createDto, req.user);
   }
 
   @Get('v1')

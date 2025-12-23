@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
-import { CreateTrackDto, UpdateTrackDto } from '../interface/track.dto';
+import { UpdateTrackDto,TTrackCreate, TTrackUpdate } from '../interface/track.dto';
+import { TTrackDetailInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
 export class TrackRepository {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(data: CreateTrackDto) {
+  async create(data: TTrackCreate) {
     return this.prisma.track.create({ data });
   }
 
@@ -23,20 +24,21 @@ export class TrackRepository {
       skip,
       take,
       cursor,
+      include: TTrackDetailInclude,
       where: { ...where, deletedAt: null },
       orderBy,
     });
   }
 
   async findOne(id: string) {
-    return this.prisma.track.findUnique({ where: { id } });
+    return this.prisma.track.findUnique({ where: { id },include: TTrackDetailInclude });
   }
 
   async findUnique(where: Prisma.TrackWhereUniqueInput) {
     return this.prisma.track.findUnique({ where });
   }
 
-  async update(id: string, data: UpdateTrackDto) {
+  async update(id: string, data: TTrackUpdate) {
     return this.prisma.track.update({ where: { id }, data });
   }
 
