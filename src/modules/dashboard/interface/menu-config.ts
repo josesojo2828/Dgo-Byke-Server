@@ -15,25 +15,6 @@ export const MASTER_MENU: MenuConfigItem[] = [
         route: '/',
         icon: 'LayoutDashboard',
     },
-    {
-        label: 'Gestión',
-        route: '/organizer',
-        icon: 'FolderCog', // Icono de sección (opcional)
-        children: [
-            {
-                label: 'Mis Carreras',
-                route: '/my-races', // Se convertirá en /organizer/my-races
-                icon: 'Calendar',
-                requiredPermission: 'races.read_own' // Permiso específico
-            },
-            {
-                label: 'Participantes',
-                route: '/members',
-                icon: 'Users',
-                requiredPermission: 'members.read'
-            }
-        ]
-    },
 
     // 2. GESTIÓN DE CARRERAS (Core)
     {
@@ -53,12 +34,6 @@ export const MASTER_MENU: MenuConfigItem[] = [
                 route: '/races/create',
                 icon: 'PlusCircle',
                 requiredPermission: 'race:action:create', // Permiso específico de creación
-            },
-            {
-                label: 'Cronometraje',
-                route: '/races/timing',
-                icon: 'Timer',
-                requiredPermission: 'timing:action:read',
             }
         ]
     },

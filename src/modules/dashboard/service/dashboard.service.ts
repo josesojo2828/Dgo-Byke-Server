@@ -13,6 +13,45 @@ export class DashboardService {
         const entity = SystemPermissions;
     }
 
+    async getGeneralStats() {
+        const now = new Date();
+        const firstDayMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const [
+            totalUsers,
+            activeRaces,
+            totalRevenue,
+            pendingPayments,
+            recentInscriptions
+        ] = await Promise.all([
+            this.prisma.user.count(),
+            this.prisma.race.count({ where: { status: 'EN_CURSO' } }),
+            this.prisma.payment.aggregate({
+                where: { status: 'COMPLETED' },
+                _sum: { amount: true }
+            }),
+            this.prisma.payment.count({ where: { status: 'PENDING' } }),
+            this.prisma.raceParticipant.findMany({
+                take: 5,
+                orderBy: { registeredAt: 'desc' },
+                include: {
+                    profile: { include: { user: true } },
+                    race: true
+                }
+            })
+        ]);
+
+        return {
+            stats: {
+                users: totalUsers,
+                liveRaces: activeRaces,
+                revenue: totalRevenue._sum.amount || 0,
+                pendingPayments
+            },
+            recentInscriptions
+        };
+    }
+
     async getAdminStats() {
         // 1. Contar usuarios por rol (RBAC)
         const rolesCount = await this.prisma.role.findMany({

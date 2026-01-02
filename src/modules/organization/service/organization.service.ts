@@ -110,6 +110,38 @@ export class OrganizationService {
 
   //
 
+  async getOrganizationSummary(orgId: string) {
+    const [stats, recentPayments, activeRaces] = await Promise.all([
+      // 1. Métricas Globales
+      this.prisma.raceParticipant.aggregate({
+        where: { race: { organizationId: orgId } },
+        _count: { id: true },
+        _sum: { finalTime: true }, // Ejemplo de otra métrica
+      }),
+
+      // 2. Pagos Pendientes (Urgente para gestión)
+      this.prisma.payment.findMany({
+        where: { race: { organizationId: orgId }, status: 'PENDING' },
+        include: { user: true, race: true },
+        take: 5,
+        orderBy: { createdAt: 'desc' }
+      }),
+
+      // 3. Carreras próximas o en curso
+      this.prisma.race.findMany({
+        where: { organizationId: orgId, status: { in: ['PROGRAMADA', 'EN_CURSO'] } },
+        include: { _count: { select: { participants: true } } }
+      })
+    ]);
+
+    return {
+      totalParticipants: stats._count.id,
+      pendingPayments: recentPayments,
+      activeRaces
+    };
+  }
+
+
   // --- 1. OBTENER INFO PÚBLICA POR SLUG ---
   async getPublicInfoBySlug(slug: string) {
     const org = await this.prisma.organization.findUnique({

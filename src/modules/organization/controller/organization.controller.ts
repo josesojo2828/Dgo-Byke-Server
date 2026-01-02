@@ -42,6 +42,16 @@ export class OrganizationController {
     // El usuario (req.user.id) se une a la org identificada por el slug
     return this.service.joinBySlug(req.user.id, slug);
   }
+
+  // ============================================================
+  // 2. UNIRSE A LA ORGANIZACIÓN (Privado - Requiere Login)
+  // URL: POST /organizations/join/club-mtb-guarico
+  // ============================================================
+  @Get('org/:orgId/summary')
+  async getOrgSummary(@Param('orgId') orgId: string) {
+    return await this.service.getOrganizationSummary(orgId);
+  }
+
   // ==========================================
   // RUTAS DE ADMINISTRACIÓN DE LA ORG
   // ==========================================

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../modules/auth/guard/jwt-auth.guard';
 import { CurrentUser, RequirePermissions } from '../../../shared/decorators/permissions.decorator';
@@ -18,6 +18,11 @@ export class DashboardController {
     @RequirePermissions(SystemPermissions.System.Manage) // Solo SuperAdmins ven esto
     getAdminStats() {
         return this.dashboardService.getAdminStats();
+    }
+
+    @Get('general')
+    async getGeneralStats() {
+        return this.dashboardService.getGeneralStats();
     }
 
     // @Get('menu')
