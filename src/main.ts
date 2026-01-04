@@ -18,6 +18,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({
       bodyLimit: 1024 * 1024 * 30, // 30 MB
+      logger: true,
     }),
   );
 
@@ -75,6 +76,8 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter());
   const PORT = process.env.PORT ?? 3001;
+
+  const fastifyInstance = app.getHttpAdapter().getInstance();
 
   console.log(`Server running on port ${PORT}`);
   await app.listen(PORT, '0.0.0.0');
