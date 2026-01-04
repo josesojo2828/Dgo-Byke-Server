@@ -35,6 +35,10 @@ export class CreateBicycleDto {
   @IsOptional()
   @IsObject({ message: 'Las especificaciones deben ser un objeto JSON' })
   specs?: any;
+
+  @IsOptional()
+  @IsString()
+  birthDate: string
 }
 
 export class UpdateBicycleDto extends PartialType(CreateBicycleDto) {}

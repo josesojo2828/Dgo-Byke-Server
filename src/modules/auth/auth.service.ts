@@ -54,13 +54,8 @@ export class AuthService {
             fullName: registerDto.fullName,
             isActive: true,
             // Force default role via Enum
-            systemRole: SystemRole.CYCLIST
+            roleId: 'USER'
         } as any); // Type cast quite safe now
-
-        // 2. Assign Default Role (USER/CYCLIST) via RBAC
-        // We need to inject PrismaService or IamService to assign role.
-        // For simplicity, let's assume we can use a helper or just return the user for now
-        // Ideally: await this.iamService.assignRole...
 
         // Let's return the token immediately so they are logged in
         const payload: IJwtPayload = { email: user.email, sub: user.id };

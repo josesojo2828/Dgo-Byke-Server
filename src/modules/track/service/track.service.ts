@@ -26,11 +26,34 @@ export class TrackService {
       }),
     );
 
+    let organizacionId = '';
     const orgId = await this.prisma.organization.findFirst({ where: { members: { some: { userId: userSession.id } } } });
 
     if (!orgId) {
+      // if (userSession.systemRole === 'ADMIN') {
+      //   const newOrg = await this.prisma.organization.create({
+      //     data: {
+      //       name: `Org Super Admin Org`, // Dinámico
+      //       slug: `org-super-admin-org`, // Slug único temporal
+      //       description: 'Organización creada automáticamente',
+      //       members: {
+      //         create: {
+      //           userId: userSession.id,
+      //           role: 'OWNER' // Cambiado de ADMIN a OWNER para coherencia con tu enum OrgRole
+      //         }
+      //       }
+      //     }
+      //   });
+
+      //   organizacionId = newOrg.id;
+      // } else {
       throw new BusinessLogicException('Debes pertenecer a una organización para crear un track');
+      // }
+    } else {
+      organizacionId = orgId.id;
+
     }
+
 
     const createObject: TTrackCreate = {
       distanceKm: createDto.distanceKm,
@@ -40,7 +63,7 @@ export class TrackService {
       latitude: createDto.latitude,
       longitude: createDto.longitude,
       geoData: [],
-      organization: { connect: { id: orgId.id } },
+      organization: { connect: { id: organizacionId } },
     }
 
     // 2. Repository Logic

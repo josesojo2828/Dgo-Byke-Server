@@ -21,9 +21,9 @@ export class CreateCategoryDto {
   @IsString()
   gender?: string; // 'M', 'F', 'MIXTO'
 
-  @IsArray()
-  @IsUUID('4', { each: true }) // Valida que cada item sea un UUID
-  categoryIds: string[];
+  // @IsArray()
+  // @IsUUID('4', { each: true }) // Valida que cada item sea un UUID
+  // categoryIds: string[];
 }
 
 export class UpdateCategoryDto extends PartialType(CreateCategoryDto) { }

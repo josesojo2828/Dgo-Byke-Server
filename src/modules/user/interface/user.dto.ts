@@ -32,6 +32,20 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   avatarUrl?: string;
 }
 
+export class UpdatePasswordUserDto {
+  @IsString({ message: 'La contraseña debe tener al menos 6 caracteres' })
+  @MinLength(6)
+  currentPassword: string;
+
+  @IsString({ message: 'La contraseña debe tener al menos 6 caracteres' })
+  @MinLength(6)
+  newPassword: string;
+
+  @IsString({ message: 'La contraseña debe tener al menos 6 caracteres' })
+  @MinLength(6)
+  confirmPassword: string;
+}
+
 export type TUserCreate = Prisma.UserCreateInput;
 export type TUserUpdate = Prisma.UserUpdateInput;
 export type TUserUniqueId = { id: string };

@@ -14,8 +14,6 @@ export class OrganizationController {
 
   @Get('v1/me')
   @UseGuards(SessionAuthGuard)
-  // No requiere permiso de sistema específico, solo estar logueado. 
-  // El servicio valida si tiene org.
   async getMyOrganization(@CurrentUser() user: any) {
     return this.service.findByOwner(user.id);
   }
@@ -39,7 +37,6 @@ export class OrganizationController {
     @Param('slug') slug: string,
     @Req() req: any
   ) {
-    // El usuario (req.user.id) se une a la org identificada por el slug
     return this.service.joinBySlug(req.user.id, slug);
   }
 

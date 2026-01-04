@@ -13,13 +13,13 @@ export class TrackController {
   constructor(private readonly service: TrackService) { }
 
   @Post('v1')
-  @RequirePermissions(SystemPermissions.Tracks.Create)
+  // @RequirePermissions(SystemPermissions.Tracks.Create)
   create(@Body() createDto: CreateTrackDto, @Req() req: any) {
     return this.service.create(createDto, req.user);
   }
 
   @Get('v1')
-  @RequirePermissions(SystemPermissions.Tracks.Read)
+  // @RequirePermissions(SystemPermissions.Tracks.Read)
   findAll() {
     return this.service.findAll();
   }

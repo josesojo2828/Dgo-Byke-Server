@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { UserService } from '../service/user.service';
-import { CreateUserDto, UpdateUserDto } from '../interface/user.dto';
+import { CreateUserDto, UpdatePasswordUserDto, UpdateUserDto } from '../interface/user.dto';
 import { SessionAuthGuard } from '../../auth/guard/session-auth-guard';
 import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
@@ -68,7 +68,6 @@ export class UserController {
     @Query('search') search?: string,
     @Query('role') role?: string
   ) {
-    // Reutilizamos el findAll pero pasando los filtros
     return this.service.findAll({ search, role });
   }
 
@@ -90,9 +89,15 @@ export class UserController {
   }
 
   @Patch('v1/:id')
-  @RequirePermissions(SystemPermissions.Users.Update)
+  // @RequirePermissions(SystemPermissions.Users.Update)
   update(@Param('id') id: string, @Body() updateDto: UpdateUserDto) {
     return this.service.update(id, updateDto);
+  }
+
+  @Patch('v1/:id/password')
+  // @RequirePermissions(SystemPermissions.Users.Update)
+  password(@Param('id') id: string, @Body() updateDto: UpdatePasswordUserDto) {
+    return this.service.updatePassword(id, updateDto);
   }
 
   @Delete('v1/:id')

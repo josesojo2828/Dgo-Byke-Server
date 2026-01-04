@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserRepository } from '../repository/user.repository';
-import { CreateUserDto, TUserCreate, TUserWhere, UpdateUserDto } from '../interface/user.dto';
+import { CreateUserDto, TUserCreate, TUserUpdate, TUserWhere, UpdatePasswordUserDto, UpdateUserDto } from '../interface/user.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
 import { startOfMonth, subMonths, format, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -413,7 +413,8 @@ export class UserService {
 
     const { roleId } = createDto;
 
-    const rolFound = await this.prisma.role.findUnique({ where: { id: roleId } });
+    const rolFound = await this.prisma.role.findFirst({ where: { OR: [{ id: roleId }, { name: roleId }] } });
+    console.log(roleId, rolFound);
     if (!rolFound) throw new BusinessLogicException('No existe el rol seleccionado');
 
     const objectCreate: TUserCreate = {
@@ -421,10 +422,11 @@ export class UserService {
       password: createDto.password,
       fullName: createDto.fullName,
       isActive: true,
-      phone: createDto.phone,
       roles: { create: { roleId: rolFound.id } },
       cyclistProfile: { create: {} }
     };
+
+    if (createDto.phone) objectCreate.phone = createDto.phone;
 
     const result = await this.repository.create(objectCreate);
 
@@ -507,11 +509,37 @@ export class UserService {
   }
 
   async update(id: string, updateDto: UpdateUserDto) {
-    // Hash password if present
-    if (updateDto.password) {
-      const salt = await bcrypt.genSalt();
-      updateDto.password = await bcrypt.hash(updateDto.password, salt);
-    }
+    this.eventEmitter.emit(
+      'user:pre:update',
+      new DomainEvent({
+        entityName: 'User',
+        action: 'pre:update',
+        payload: { id, ...updateDto },
+      }),
+    );
+
+    console.log(updateDto);
+
+    const customData: TUserUpdate = { fullName: updateDto.fullName, phone: updateDto.phone, email: updateDto.email }
+
+    const result = await this.repository.update(id, customData);
+
+    this.eventEmitter.emit(
+      'user:post:update',
+      new DomainEvent({
+        entityName: 'User',
+        action: 'post:update',
+        payload: result,
+      }),
+    );
+
+    return result;
+  }
+
+  async updatePassword(id: string, updateDto: UpdatePasswordUserDto) {
+
+    const salt = await bcrypt.genSalt();
+    const savePassword = await bcrypt.hash(updateDto.newPassword, salt);
 
     // 1. Pre-Event
     this.eventEmitter.emit(
@@ -523,8 +551,24 @@ export class UserService {
       }),
     );
 
-    // 2. Repository Logic
-    const result = await this.repository.update(id, updateDto);
+
+    // validar contraseña actual
+    const user = await this.repository.findOne(id);
+    if (!user) throw new BusinessLogicException('Usuario no encontrado');
+
+    console.log(savePassword, user.password);
+
+
+    if (await bcrypt.compare(savePassword, user.password)) {
+      throw new BusinessLogicException('La contraseña actual es incorrecta');
+    }
+
+    if(updateDto.newPassword !== updateDto.confirmPassword) {
+      throw new BusinessLogicException('Las contraseñas no coinciden');
+    }
+
+    // actualizar contraseña
+    const result = await this.repository.update(id, { password: savePassword });
 
     // 3. Post-Event
     this.eventEmitter.emit(
