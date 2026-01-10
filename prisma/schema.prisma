@@ -252,8 +252,8 @@ model Track {
   // Puntos de control en la ruta
   checkpoints Checkpoint[]
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  organizationId String
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
 
   races Race[]
 

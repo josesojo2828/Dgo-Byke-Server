@@ -24,7 +24,7 @@ async function bootstrap() {
 
   // --- CONFIGURACIÓN CORS (AGREGA ESTO) ---
   app.enableCors({
-    origin: ['https://api-dgobyke.ramirezicode.com.ve','http://localhost:3000', 'http://localhost:7002'], // Dominios permitidos (Tu frontend)
+    origin: ['http://dgobyke.ramirezicode.com.ve','http://localhost:3000', 'http://localhost:7002'], // Dominios permitidos (Tu frontend)
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true, // Importante si usas cookies o headers de autorización
   });
