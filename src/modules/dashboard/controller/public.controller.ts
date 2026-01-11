@@ -12,7 +12,7 @@ export class PublicController {
 
     @Get('init')
     async init() {
-        // await this.fakerInitService.pipeline();
+        await this.fakerInitService.pipeline();
     }
 
     @Get('races')

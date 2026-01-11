@@ -66,6 +66,10 @@ export class FakerInitService {
 
         const cts = await this.categoryRepository.findAll();
 
+        console.log(cts);
+
+        return;
+
         if (!cts) {
             console.log('No se pudo obtener las categorías');
             return;
