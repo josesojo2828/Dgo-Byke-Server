@@ -52,17 +52,17 @@ export class FakerInitService {
 
         console.log('Categorias [INICIO]');
         const categoriesList: any[] = [];
-        // racerCategories.forEach(async (discipline) => {
-        //     const category = await this.categoryRepository.create({
-        //         name: discipline.name,
-        //         minAge: discipline.minAge,
-        //         maxAge: discipline.maxAge,
-        //         gender: discipline.gender,
-        //         // id: discipline.id
-        //     });
-        //     console.log(discipline.name, 'CREADO.');
-        //     categoriesList.push(category);
-        // });
+        racerCategories.forEach(async (discipline) => {
+            const category = await this.categoryRepository.create({
+                name: discipline.name,
+                minAge: discipline.minAge,
+                maxAge: discipline.maxAge,
+                gender: discipline.gender,
+                // id: discipline.id
+            });
+            console.log(discipline.name, 'CREADO.');
+            categoriesList.push(category);
+        });
 
         const cts = await this.categoryRepository.findAll();
 
