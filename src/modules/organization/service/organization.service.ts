@@ -213,7 +213,7 @@ export class OrganizationService {
           some: {
             userId: userId,
             // Ajusta los roles según tu enum OrgRole (ej: OWNER, ADMIN)
-            role: { in: ['OWNER', 'ADMIN'] }
+            role: { in: ['OWNER', 'ADMIN', "MEMBER", "STAFF"] }
           }
         }
       },
