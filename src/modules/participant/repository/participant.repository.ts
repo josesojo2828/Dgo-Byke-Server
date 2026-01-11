@@ -34,6 +34,10 @@ export class ParticipantRepository {
     return this.prisma.raceParticipant.findUnique({ where: { id }, include: TRaceParticipantDetailInclude });
   }
 
+  async findFirst(where: TRaceParticipantWhere) {
+    return await this.prisma.raceParticipant.findFirst({ where, include: TRaceParticipantDetailInclude });
+  }
+
   async findUnique(where: Prisma.RaceParticipantWhereUniqueInput) {
     return this.prisma.raceParticipant.findUnique({ where, include: TRaceParticipantDetailInclude });
   }

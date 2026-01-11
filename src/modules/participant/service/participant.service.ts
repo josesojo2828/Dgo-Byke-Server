@@ -34,7 +34,7 @@ export class ParticipantService {
 
     console.log(profile, createDto, user.id);
 
-    const found = await this.repository.findAll({ where: { profileId: profile.id, raceId: createDto.raceId } });
+    const found = await this.repository.findFirst({ profileId: profile.id, raceId: createDto.raceId });
     if (found) throw new BusinessLogicException('El ciclista ya tiene un perfil asociado a esta carrera');
 
     const dataToCreate: TRaceParticipantCreate = {
