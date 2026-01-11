@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { RaceService } from '../service/race.service';
 import { CreateRaceDto, UpdateRaceDto } from '../interface/race.dto';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
@@ -35,8 +35,8 @@ export class RaceController {
   }
 
   @Get('v1')
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query() query: { organizationId?: string }) {
+    return this.service.findAll({ organizationId: query.organizationId });
   }
 
   @Get('v1/:id')

@@ -22,6 +22,6 @@ import { JwtService } from '@nestjs/jwt';
     PrismaService,
     JwtService
   ],
-  exports: [TrackService]
+  exports: [TrackService,TrackRepository]
 })
 export class TrackModule { }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
-import { CreateRaceDto, UpdateRaceDto, TRaceWhere, TRaceUniqueId } from '../interface/race.dto';
+import { CreateRaceDto, UpdateRaceDto, TRaceWhere, TRaceUniqueId, TRaceCreate } from '../interface/race.dto';
 import { TRaceDetailInclude, TRaceListInclude } from 'src/shared/types/prisma.types';
 
 @Injectable()
@@ -106,7 +106,7 @@ export class RaceRepository {
   }
 
   // Mantenemos el anterior por compatibilidad si se usa en otro lado
-  async create(data: CreateRaceDto) {
+  async create(data: TRaceCreate) {
     // ... lógica anterior
     return this.prisma.race.create({ data: data as any });
   }

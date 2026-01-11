@@ -21,6 +21,6 @@ import { UserModule } from 'src/modules/user/user.module';
         PrismaService,
         JwtService
     ],
-    exports: [OrganizationMemberService]
+    exports: [OrganizationMemberService,OrganizationMemberRepository]
 })
 export class OrganizationMemberModule { }

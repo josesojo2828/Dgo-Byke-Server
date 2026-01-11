@@ -72,7 +72,7 @@ export class UserService {
     const membership = await this.prisma.organizationMember.findFirst({
       where: {
         userId,
-        role: { in: ['OWNER', 'ADMIN'] },
+        role: { in: ['OWNER', 'ADMIN', 'MEMBER', 'STAFF'] },
         deletedAt: null
       },
       include: {
@@ -103,6 +103,7 @@ export class UserService {
       }
     };
   }
+
   async getCyclistResults(userId: string) {
     // 1. Obtener el perfil para tener el profileId
     const profile = await this.prisma.cyclistProfile.findUnique({
@@ -389,7 +390,7 @@ export class UserService {
     });
   }
 
-  async create(createDto: CreateUserDto) {
+  async create(createDto: CreateUserDto, orgId?: string) {
     // Hash password if present
     if (createDto.password) {
       const salt = await bcrypt.genSalt();
@@ -414,8 +415,9 @@ export class UserService {
     const { roleId } = createDto;
 
     const rolFound = await this.prisma.role.findFirst({ where: { OR: [{ id: roleId }, { name: roleId }] } });
-    console.log(roleId, rolFound);
     if (!rolFound) throw new BusinessLogicException('No existe el rol seleccionado');
+
+    const organization = await this.prisma.organization.findFirst({ where: { slug: orgId } });
 
     const objectCreate: TUserCreate = {
       email: createDto.email,
@@ -423,8 +425,23 @@ export class UserService {
       fullName: createDto.fullName,
       isActive: true,
       roles: { create: { roleId: rolFound.id } },
-      cyclistProfile: { create: {} }
+      cyclistProfile: { create: {} },
     };
+
+
+    console.log('###########################');
+    console.log(organization);
+    
+    if (organization) {
+      objectCreate.memberships = {
+        create: {
+          organization: { connect: { id: organization.id } },
+          position: 'Ciclista',
+          role: 'MEMBER',
+          joinedAt: new Date()
+        }
+      }
+    }
 
     if (createDto.phone) objectCreate.phone = createDto.phone;
 
@@ -563,7 +580,7 @@ export class UserService {
       throw new BusinessLogicException('La contraseña actual es incorrecta');
     }
 
-    if(updateDto.newPassword !== updateDto.confirmPassword) {
+    if (updateDto.newPassword !== updateDto.confirmPassword) {
       throw new BusinessLogicException('Las contraseñas no coinciden');
     }
 

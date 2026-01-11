@@ -38,6 +38,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SharedModule } from './shared/shared.module';
 import { JwtService } from '@nestjs/jwt';
 import { LogisticsModule } from './modules/logistics/logistic.module';
+import { FakerInitModule } from './shared/faker/faker-init.module';
 
 @Module({
   imports: [
@@ -97,6 +98,7 @@ import { LogisticsModule } from './modules/logistics/logistic.module';
     NotificationsModule,
     DashboardModule,
     LogisticsModule,
+    FakerInitModule
   ],
   controllers: [
     AppController,
@@ -105,6 +107,7 @@ import { LogisticsModule } from './modules/logistics/logistic.module';
     CustomEventListener,
     DataSeederService,
     JwtService,
+    // FakerInitService,
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformResponseInterceptor,

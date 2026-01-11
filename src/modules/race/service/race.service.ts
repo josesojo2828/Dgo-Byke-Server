@@ -128,8 +128,11 @@ export class RaceService {
   // MÉTODOS ESTÁNDAR (Sin cambios funcionales)
   // ============================================================
 
-  async findAll(params?: any) {
-    return this.repository.findAll(params);
+  async findAll(params: { organizationId?: string }) {
+    return this.repository.findAll({
+      where: { organizationId: params.organizationId },
+      orderBy: { date: 'desc' }
+    });
   }
 
   async findOne(id: string) {

@@ -22,6 +22,6 @@ import { UserModule } from 'src/modules/user/user.module';
     PrismaService,
     JwtService,
   ],
-  exports: [RaceService]
+  exports: [RaceService,RaceRepository]
 })
 export class RaceModule { }

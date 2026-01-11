@@ -15,7 +15,8 @@ export class CreateRaceDto {
   type: RaceType;
 
   @IsUUID('4', { message: 'Organización inválida' })
-  organizationId: string;
+  @IsOptional()
+  organizationId?: string;
 
   @IsUUID('4', { message: 'Pista inválida' })
   trackId: string;

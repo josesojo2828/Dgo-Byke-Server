@@ -132,6 +132,10 @@ model CyclistProfile {
   emergencyContactName  String? // Coincide con el form
   emergencyContactPhone String? // Coincide con el form
 
+  // Categoria
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
   // Otros
   teamName  String?
   birthDate DateTime? // No estaba en el form, pero útil tenerlo
@@ -269,6 +273,11 @@ model Category {
   minAge Int?
   maxAge Int?
   gender String? // M, F, MIXTO
+
+  description String?
+
+  // Relaciones
+  ciclists CyclistProfile[]
 
   // Relación de "Similitud" (Many-to-Many self relation)
   // Permite agrupar categorías que pueden correr juntas (Ej: Master A y B)

@@ -54,8 +54,8 @@ export class AuthService {
             fullName: registerDto.fullName,
             isActive: true,
             // Force default role via Enum
-            roleId: 'USER'
-        } as any); // Type cast quite safe now
+            roleId: 'USER',
+        } as any, registerDto.organization); // Type cast quite safe now
 
         // Let's return the token immediately so they are logged in
         const payload: IJwtPayload = { email: user.email, sub: user.id };

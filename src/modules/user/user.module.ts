@@ -22,6 +22,6 @@ import { CyclistProfileController } from './controller/cyclist-profile.controlle
     CyclistProfileService,
     JwtService,
   ],
-  exports: [UserService,CyclistProfileService]
+  exports: [UserService,CyclistProfileService,UserRepository]
 })
 export class UserModule { }

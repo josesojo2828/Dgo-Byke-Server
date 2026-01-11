@@ -15,7 +15,9 @@ export class OrganizationController {
   @Get('v1/me')
   @UseGuards(SessionAuthGuard)
   async getMyOrganization(@CurrentUser() user: any) {
-    return this.service.findByOwner(user.id);
+    const entity = await this.service.findByOwner(user.id);
+    console.log('entity', entity);
+    return entity;
   }
 
   // ============================================================
@@ -56,8 +58,8 @@ export class OrganizationController {
   @Post('v1')
   @UseGuards(SessionAuthGuard)
   @RequirePermissions(SystemPermissions.Organizations.Create)
-  create(@Body() createDto: CreateOrganizationDto) {
-    return this.service.create(createDto);
+  create(@Body() createDto: CreateOrganizationDto, @Req() req: any) {
+    return this.service.create(createDto,req.user.id);
   }
 
   @Get('v1')

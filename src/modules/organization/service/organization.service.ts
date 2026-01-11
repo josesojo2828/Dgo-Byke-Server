@@ -15,7 +15,7 @@ export class OrganizationService {
     private readonly prisma: PrismaService
   ) { }
 
-  async create(createDto: CreateOrganizationDto) {
+  async create(createDto: CreateOrganizationDto, userId: string) {
     // 1. Pre-Event
     this.eventEmitter.emit(
       'organization:pre:create',
@@ -31,6 +31,13 @@ export class OrganizationService {
       name: createDto.name,
       slug: createDto.slug,
       description: createDto.description,
+      members: {
+        create: {
+          userId,
+          role: 'OWNER',
+          position: 'Director General'
+        }
+      }
     });
 
     // 3. Post-Event
