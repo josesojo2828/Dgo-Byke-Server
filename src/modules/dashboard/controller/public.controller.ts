@@ -34,4 +34,9 @@ export class PublicController {
     async getRankings(@Param('raceId') raceId: string) {
         return this.publicService.getRaceRanking(raceId);
     }
+
+    @Get('races/:id') // Nueva ruta: /public/races/uuid-de-la-carrera
+    async getRaceDetail(@Param('id') id: string) {
+        return this.publicService.getRaceDetail(id);
+    }
 }

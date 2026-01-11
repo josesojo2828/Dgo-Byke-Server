@@ -1,5 +1,6 @@
-import { IsOptional, IsString, IsInt, Min } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { RaceType } from 'src/shared/types/system.type';
 
 export class PaginationDto {
     @IsOptional()
@@ -13,4 +14,13 @@ export class PaginationDto {
     @IsInt()
     @Min(1)
     limit?: number = 10;
+
+    // --- NUEVOS FILTROS ---
+    @IsOptional()
+    @IsString()
+    search?: string; // Para buscar por nombre de carrera
+
+    @IsOptional()
+    @IsEnum(RaceType)
+    type?: RaceType; // Para filtrar: MTB, RUTA, etc
 }
