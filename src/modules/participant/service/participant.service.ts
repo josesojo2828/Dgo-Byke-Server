@@ -5,16 +5,19 @@ import { CreateParticipantDto, TRaceParticipantCreate, TRaceParticipantWhere, Up
 import { DomainEvent } from 'src/shared/event/domain-listener';
 import { UserService } from 'src/modules/user/service/user.service';
 import { BusinessLogicException } from 'src/shared/error';
+import { PrismaService } from 'src/shared/service/prisma.service';
+import { User } from 'src/shared/types/system.type';
 
 @Injectable()
 export class ParticipantService {
   constructor(
     private readonly repository: ParticipantRepository,
     private readonly userService: UserService,
+    private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2
   ) { }
 
-  async create(createDto: CreateParticipantDto) {
+  async create(createDto: CreateParticipantDto, user: User) {
     // 1. Pre-Event
     this.eventEmitter.emit(
       'participant:pre:create',
@@ -26,15 +29,16 @@ export class ParticipantService {
     );
 
     // verificar si el ciclista ya tiene un perfil
-    const profile = await this.userService.findOne(createDto.profileId);
-    if (!profile || !profile.cyclistProfile) throw new BusinessLogicException('Debes crear un perfil de ciclista primero');
+    const profile = await this.prisma.cyclistProfile.findFirst({ where: { userId: user.id } });
+    if (!profile) throw new BusinessLogicException('Debes crear un perfil de ciclista primero');
 
-    const found = await this.repository.findAll({ where: { profileId: createDto.profileId, raceId: createDto.raceId } });
-    console.log(found);
+    console.log(profile, createDto, user.id);
+
+    const found = await this.repository.findAll({ where: { profileId: profile.id, raceId: createDto.raceId } });
     if (found) throw new BusinessLogicException('El ciclista ya tiene un perfil asociado a esta carrera');
 
     const dataToCreate: TRaceParticipantCreate = {
-      profile: { connect: { id: profile.cyclistProfile.id } },
+      profile: { connect: { id: profile.id } },
       race: { connect: { id: createDto.raceId } },
     };
 
@@ -62,7 +66,7 @@ export class ParticipantService {
       where.push({ raceId: params.raceId });
     }
 
-    return this.repository.findAll({ 
+    return this.repository.findAll({
       where: where.length > 0 ? { OR: where } : undefined,
     });
   }

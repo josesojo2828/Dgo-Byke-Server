@@ -6,6 +6,8 @@ import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
 import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
+import type { User } from 'src/shared/types/system.type';
 
 @Controller('participants')
 @UseGuards(SessionAuthGuard, PermissionsGuard)
@@ -14,8 +16,8 @@ export class ParticipantController {
 
   @Post('v1')
   // @RequirePermissions(SystemPermissions.Participants.Create)
-  create(@Body() createDto: CreateParticipantDto) {
-    return this.service.create(createDto);
+  create(@Body() createDto: CreateParticipantDto, @CurrentUser() user: User) {
+    return this.service.create(createDto, user);
   }
 
   @Get('v1')
