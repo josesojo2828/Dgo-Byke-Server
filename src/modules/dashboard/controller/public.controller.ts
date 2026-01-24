@@ -17,7 +17,7 @@ export class PublicController {
 
     @Get('races')
     async getRaces(@Query() query: PaginationDto) {
-        return this.publicService.getPublicRaces(query);
+        return await this.publicService.getPublicRaces(query);
     }
 
     @Get('categories')

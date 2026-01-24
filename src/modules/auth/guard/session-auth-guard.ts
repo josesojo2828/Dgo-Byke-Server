@@ -41,6 +41,8 @@ export class SessionAuthGuard implements CanActivate {
                 const user = await this.usersService.findByToken(`${token}`);
                 if (!user) throw new UnauthorizedException();
 
+                console.log(user);
+
                 (request as any).user = user;
                 return true; // ✅ Acceso concedido vía JWT
             } catch (error) {

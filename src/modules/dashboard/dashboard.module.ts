@@ -6,11 +6,13 @@ import { UserModule } from '../user/user.module';
 import { PublicService } from './service/public.service';
 import { PublicController } from './controller/public.controller';
 import { FakerInitModule } from 'src/shared/faker/faker-init.module';
+import { CronoModule } from '../crono/crono.module';
 
 @Module({
     imports: [
         UserModule,
         FakerInitModule,
+        CronoModule
     ],
     controllers: [DashboardController,PublicController],
     providers: [DashboardService,PublicService,JwtService],

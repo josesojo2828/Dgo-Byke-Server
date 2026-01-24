@@ -5,6 +5,7 @@ import { LoginDto, IJwtPayload, RegisterDto } from './interface/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { SystemRole, User } from 'src/shared/types/system.type';
 import { DashboardService } from '../dashboard/service/dashboard.service';
+import { JWT_SECRET } from 'src/constant';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,7 @@ export class AuthService {
     async login(loginDto: LoginDto) {
         const user = await this.validateUser(loginDto.email, loginDto.password);
         if (!user) {
-            return { error: 'Credenciales malas (Prueba)' };
+            return { error: 'Credenciales incorrectas.' };
         }
 
         const role = (user.roles[0] as any).role.name;
@@ -36,13 +37,43 @@ export class AuthService {
         const slide = await this.dashboardService.getMenu(list, roleName);
         const payload: IJwtPayload = { email: user.email, sub: user.id };
         const token = this.jwtService.sign(payload, {
-            secret: 'CLAVE_TEMPORAL_DURA'
+            secret: JWT_SECRET
         });
         await this.userService.setToken(user.id, token);
         return {
             access_token: token,
             user: user,
             slide
+        };
+    }
+
+    async loginAdmin(loginDto: LoginDto) {
+        const user = await this.validateUser(loginDto.email, loginDto.password);
+        if (!user) {
+            return { error: 'Credenciales incorrectas.' };
+        }
+
+        const role = (user.roles[0] as any).role.name;
+
+        if(role !== 'SUPER_ADMIN') {
+            throw new UnauthorizedException('No tienes permisos para acceder a esta acción.');
+        }
+
+        if(!user.isActive) {
+            throw new UnauthorizedException('Usuario no activo.');
+        }
+
+
+        const payload: IJwtPayload = { email: user.email, sub: user.id };
+        const token = this.jwtService.sign(payload, {
+            secret: JWT_SECRET
+        });
+
+        await this.userService.setToken(user.id, token);
+
+        return {
+            access_token: token,
+            user: user,
         };
     }
 

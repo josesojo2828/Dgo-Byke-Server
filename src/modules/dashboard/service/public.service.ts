@@ -1,12 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { RaceStatus } from '@prisma/client';
+import { Prisma, RaceStatus } from '@prisma/client';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { PaginationDto } from '../interface/public.dto';
 import { TRaceWhere } from 'src/modules/race/interface/race.dto';
+import { CronoRepository } from 'src/modules/crono/repository/crono.repository';
+import { CronoService } from 'src/modules/crono/service/crono.service';
 
 @Injectable()
 export class PublicService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cronoRepository: CronoRepository,
+    private readonly cronoService: CronoService
+  ) { }
 
   // 1. OBTENER EVENTOS (Carreras)
   // Filtramos para NO mostrar borradores ni canceladas si no quieres
@@ -92,64 +98,51 @@ export class PublicService {
   }
 
   // 4. RANKING DE UNA CARRERA
-  async getRaceRanking(raceId: String) {
-    // Verificamos que la carrera exista
-    const race = await this.prisma.race.findUnique({ where: { id: raceId as string } });
+  async getRaceRanking(raceId: string) {
+    // 1. Validar carrera
+    const race = await this.prisma.race.findUnique({
+      where: { id: raceId },
+      // AÑADIMOS 'type: true' para satisfacer la interfaz RaceConfig
+      select: {
+        id: true,
+        laps: true,
+        name: true,
+        date: true,
+        type: true
+      }
+    });
+
     if (!race) throw new NotFoundException('Carrera no encontrada');
 
-    return this.prisma.raceParticipant.findMany({
-      where: {
-        raceId: raceId as string,
-        // Opcional: Solo mostrar los que tienen tiempo final o status ok
-        finalTime: { not: null },
-      },
-      orderBy: [
-        { rank: 'asc' },       // Primero por posición
-        { finalTime: 'asc' },  // Respaldo por tiempo
-      ],
-      select: {
-        rank: true,
-        finalTime: true,
-        bibNumber: true,
-        status: true,
-        // Datos del ciclista (SIN password ni email)
-        profile: {
-          select: {
-            teamName: true,
-            user: {
-              select: {
-                fullName: true,
-                avatarUrl: true,
-                // country: true, // Si lo tuvieras
-              },
-            },
-          },
-        },
-        // Qué bici usó
-        bicycle: {
-          select: { brand: true, model: true }
-        }
-      },
-    });
+    // 2. Obtener los datos reales desde el repositorio de Crono
+    const participants = await this.cronoRepository.getParticipantsWithTimings(raceId);
+
+    // 3. Calcular el ranking usando el motor oficial
+    // Ahora TypeScript validará correctamente el objeto 'race'
+    return this.cronoService.calculateLeaderboard(participants, race);
   }
 
   async getPublicRaces(dto: PaginationDto) {
     const { page = 1, limit = 10, search, type } = dto;
     const skip = (page - 1) * limit;
 
-    // Construimos el filtro dinámicamente
-    const where: TRaceWhere = {
-      status: { not: 'BORRADOR' },
-      // Si hay búsqueda, busca en el nombre O en el lugar
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { locationName: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
-      // Si hay filtro de tipo
-      ...(type && { type: type }),
+    // Declaramos 'where' explícitamente con el tipo de Prisma
+    const where: Prisma.RaceWhereInput = {
+      status: { not: 'BORRADOR' }
     };
+
+    // Asignación segura del tipo de carrera
+    if (type) {
+      where.type = type;
+    }
+
+    // Construcción del OR para búsqueda por texto
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+        { locationName: { contains: search, mode: 'insensitive' as Prisma.QueryMode } },
+      ];
+    }
 
     const [total, data] = await Promise.all([
       this.prisma.race.count({ where }),
@@ -166,21 +159,21 @@ export class PublicService {
           status: true,
           type: true,
           price: true,
-          organization: {
-            select: { name: true, slug: true, logoUrl: true },
-          },
-          track: { // Agregamos info básica del track para la "card"
-            select: { distanceKm: true, elevationGain: true }
-          },
+          organization: { select: { name: true, slug: true, logoUrl: true } },
+          track: { select: { distanceKm: true, elevationGain: true } },
           categories: { select: { name: true } },
         },
       }),
     ]);
 
-    return {
+    const entity = {
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       data,
-    };
+    }
+
+    console.log(entity); 
+
+    return entity;
   }
 
   // NUEVO: OBTENER DETALLE DE UNA CARRERA (Para la ficha)
@@ -188,6 +181,7 @@ export class PublicService {
     const race = await this.prisma.race.findUnique({
       where: { id },
       include: {
+
         organization: {
           select: { name: true, description: true, logoUrl: true, slug: true }
         },

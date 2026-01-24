@@ -9,7 +9,7 @@ import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 
 @Controller('races')
-@UseGuards(SessionAuthGuard, PermissionsGuard)
+@UseGuards(SessionAuthGuard)
 export class RaceController {
   constructor(private readonly service: RaceService) { }
 
@@ -34,9 +34,11 @@ export class RaceController {
     return this.service.create(createDto, req.user);
   }
 
-  @Get('v1')
+  @Get('v1/all')
   findAll(@Query() query: { organizationId?: string }) {
-    return this.service.findAll({ organizationId: query.organizationId });
+    console.log(query);
+    const results = this.service.findAll({ organizationId: query.organizationId });
+    return results;
   }
 
   @Get('v1/:id')

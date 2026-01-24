@@ -361,6 +361,11 @@ model RaceEvent {
   hash        String? // Hash opcional para validar que no fue alterado
   raceTimings RaceTiming[]
 
+  metadata Json?
+  lapTime Int?
+  totalAccumulatedTime Int?
+
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?

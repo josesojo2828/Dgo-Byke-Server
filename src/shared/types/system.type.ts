@@ -16,6 +16,23 @@ export const ROLE_ROOT_PATHS: Record<SystemRole, string> = {
   [SystemRole.CYCLIST]: '/portal',      // O '/cyclist', como hayas llamado a tu carpeta en Next.js
 };
 
+
+
+export enum RaceFormat {
+  CIRCUITO = 'CIRCUITO',
+  RUTA_LINEAL = 'RUTA_LINEAL',
+  CONTRARELOJ = 'CONTRARELOJ'
+}
+
+export enum RaceModality {
+  MTB = 'MTB',
+  RUTA = 'RUTA',
+  GRAVEL = 'GRAVEL',
+  BMX = 'BMX',
+  E_BIKE = 'E_BIKE',
+  OTRO = 'OTRO'
+}
+
 export enum OrgRole {
   OWNER = 'OWNER',
   ADMIN = 'ADMIN',

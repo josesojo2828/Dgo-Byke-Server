@@ -14,6 +14,7 @@ import { RaceEventRepository } from "src/modules/race-event/repository/race-even
 import { TrackRepository } from "src/modules/track/repository/track.repository";
 import * as bcrypt from 'bcrypt';
 import { get } from "http";
+import { TCyclistProfileWhere } from "src/modules/user/interface/ciclist.dto";
 
 interface FakerConfig {
     userCount: number;
@@ -40,7 +41,55 @@ export class FakerInitService {
     }
 
     public async pipeline() {
-        await this.main();
+        await this.raceTest();
+    }
+
+    private async raceTest() {
+        const category = await this.categoryRepository.findAll({ where: { deletedAt: null } });
+        const race = await this.raceRepository.findAll({ where: { deletedAt: null }, skip: 0, take: 10 });
+        // const participant = await this.participantRepository.findAll({ where: { deletedAt: null } });
+
+        if(!category) {
+            console.log('No se pudo obtener las categorías');
+            return;
+        }
+
+        if(!race) {
+            console.log('No se pudo obtener las carreras');
+            return;
+        }
+
+        // if(!participant) {
+        //     console.log('No se pudo obtener los participantes');
+        //     return;
+        // }
+
+
+        console.log('Carreras');
+
+        race.forEach(async (r) => {
+            console.log(r.name);
+            console.log(r.categories);
+            console.log(r._count);
+            console.log('=================================');
+            const where: TCyclistProfileWhere[] = [];
+            r.categories.forEach(c => {
+                where.push({ categoryId: c.id });
+            });
+            // const c = await this.prisma.cyclistProfile.findMany({ where: { OR: where } });
+
+            // c.forEach(async (cp) => {{
+            //     await this.participantRepository.create({
+            //         profile: { connect: { id: cp.id } },
+            //         race: { connect: { id: r.id } },
+            //     })
+            // }});
+
+            console.log('=================================');
+        });
+
+        
+
     }
 
     private random(arr: any[]) {

@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RaceRepository } from '../repository/race.repository';
 import { CreateRaceDto, UpdateRaceDto } from '../interface/race.dto';
@@ -130,16 +130,24 @@ export class RaceService {
 
   async findAll(params: { organizationId?: string }) {
     return this.repository.findAll({
-      where: { organizationId: params.organizationId },
+      // where: { organizationId: params.organizationId },
       orderBy: { date: 'desc' }
     });
   }
 
   async findOne(id: string) {
-    return this.repository.findOne(id);
+    return await this.repository.findOne(id);
   }
 
   async update(id: string, updateDto: UpdateRaceDto) {
+    const currentRace = await this.repository.findOne(id);
+    if (!currentRace) throw new Error('Carrera no encontrada');
+
+    // 2. Si se intenta cambiar el status, aplicar reglas
+    if (updateDto.status && updateDto.status !== currentRace.status) {
+      this.validateStatusTransition(currentRace, updateDto.status);
+    }
+
     this.eventEmitter.emit(
       'race:pre:update',
       new DomainEvent({ entityName: 'Race', action: 'pre:update', payload: { id, ...updateDto } }),
@@ -169,5 +177,32 @@ export class RaceService {
     );
 
     return result;
+  }
+
+  private validateStatusTransition(race: any, newStatus: string) {
+    const participantsCount = race.participants?.length || 0;
+
+    switch (newStatus) {
+      case 'EN_CURSO':
+        if (participantsCount === 0) {
+          throw new BadRequestException('No puedes iniciar una carrera sin participantes registrados.');
+        }
+        if (!race.laps || race.laps < 1) {
+          throw new BadRequestException('Debes configurar al menos 1 vuelta para iniciar.');
+        }
+        break;
+
+      case 'FINALIZADA':
+        if (race.status !== 'EN_CURSO') {
+          throw new BadRequestException('Solo puedes finalizar carreras que estén actualmente "En Curso".');
+        }
+        break;
+
+      case 'PROGRAMADA':
+        if (!race.date) {
+          throw new BadRequestException('La carrera debe tener una fecha definida para ser programada.');
+        }
+        break;
+    }
   }
 }

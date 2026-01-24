@@ -1,6 +1,8 @@
+// src/public/dto/pagination.dto.ts
 import { IsOptional, IsString, IsInt, Min, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-import { RaceType } from 'src/shared/types/system.type';
+// IMPORTANTE: Importa el Enum generado por Prisma
+import { RaceType } from '@prisma/client';
 
 export class PaginationDto {
     @IsOptional()
@@ -15,12 +17,12 @@ export class PaginationDto {
     @Min(1)
     limit?: number = 10;
 
-    // --- NUEVOS FILTROS ---
     @IsOptional()
     @IsString()
-    search?: string; // Para buscar por nombre de carrera
+    search?: string;
 
     @IsOptional()
+    // Class-validator usará el Enum oficial para validar el 400
     @IsEnum(RaceType)
-    type?: RaceType; // Para filtrar: MTB, RUTA, etc
+    type?: RaceType;
 }

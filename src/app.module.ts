@@ -39,6 +39,7 @@ import { SharedModule } from './shared/shared.module';
 import { JwtService } from '@nestjs/jwt';
 import { LogisticsModule } from './modules/logistics/logistic.module';
 import { FakerInitModule } from './shared/faker/faker-init.module';
+import { CronoModule } from './modules/crono/crono.module';
 
 @Module({
   imports: [
@@ -98,7 +99,8 @@ import { FakerInitModule } from './shared/faker/faker-init.module';
     NotificationsModule,
     DashboardModule,
     LogisticsModule,
-    FakerInitModule
+    FakerInitModule,
+    CronoModule
   ],
   controllers: [
     AppController,

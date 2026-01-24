@@ -131,7 +131,7 @@ export class RaceRepository {
 
   async findOne(id: string) {
     // Para el detalle usamos el pesado
-    return this.prisma.race.findUnique({ where: { id }, include: TRaceDetailInclude });
+    return await this.prisma.race.findUnique({ where: { id }, include: TRaceDetailInclude });
   }
   async findUnique(where: TRaceUniqueId) {
     return this.prisma.race.findUnique({ where, include: TRaceDetailInclude });

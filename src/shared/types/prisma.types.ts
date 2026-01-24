@@ -135,6 +135,18 @@ export type TRaceInclude = Prisma.RaceInclude;
 // 🟢 LISTA: Datos logísticos para mostrar en tarjetas (Card UI)
 export const TRaceListInclude: Prisma.RaceInclude = {
     organization: { select: { name: true, slug: true, logoUrl: true } },
+    categories: {
+        include: TCategoryDetailInclude
+    },
+    participants: {
+        include: {
+            profile: {
+                include: {
+                    user: true
+                }
+            }
+        }
+    },
     track: { select: { name: true, distanceKm: true } }, // Info técnica rápida
     _count: {
         select: { participants: true, categories: true }
@@ -148,6 +160,15 @@ export const TRaceDetailInclude: Prisma.RaceInclude = {
     track: {
         include: {
             checkpoints: true
+        }
+    },
+    participants: {
+        include: {
+            profile: {
+                include: {
+                    user: true
+                }
+            }
         }
     },
     categories: true, // Para el select de inscripción
@@ -168,10 +189,11 @@ export const TRaceParticipantListInclude: Prisma.RaceParticipantInclude = {
             user: {
                 select: {
                     fullName: true, avatarUrl: true, email: true,
-                    cyclistProfile: true },
-                }
-            },
-            // AGREGAMOS ESTO: Para obtener género y edad
+                    cyclistProfile: true
+                },
+            }
+        },
+        // AGREGAMOS ESTO: Para obtener género y edad
     },
     bicycle: { select: { brand: true, model: true } },
     race: { select: { name: true } },
