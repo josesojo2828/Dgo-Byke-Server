@@ -41,7 +41,7 @@ export class FakerInitService {
     }
 
     public async pipeline() {
-        await this.raceTest();
+        // await this.raceTest();
     }
 
     private async raceTest() {

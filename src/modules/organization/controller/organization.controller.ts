@@ -1,12 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { OrganizationService } from '../service/organization.service';
-import { CreateOrganizationDto, UpdateOrganizationDto } from '../interface/organization.dto';
+import { CreateOrganizationDto, RegisterInOrganizationNowDto, UpdateOrganizationDto } from '../interface/organization.dto';
 import { JwtAuthGuard } from '../../auth/guard/jwt-auth.guard';
 import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
 import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
+import type { User } from 'src/shared/types/system.type';
 
 @Controller('organizations')
 export class OrganizationController {
@@ -50,6 +51,15 @@ export class OrganizationController {
   async getOrgSummary(@Param('orgId') orgId: string) {
     return await this.service.getOrganizationSummary(orgId);
   }
+
+  // ============================================================
+  // REGISTER USER IN ORGANIZATION
+  // ============================================================
+  @Post('register/:id')
+  async registerInOrganization(@Body() registerDto: RegisterInOrganizationNowDto, @Param('id') id: string, @CurrentUser() user: User) {
+    return await this.service.registerInOrganization(registerDto, id, user);
+  }
+
 
   // ==========================================
   // RUTAS DE ADMINISTRACIÓN DE LA ORG

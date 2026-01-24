@@ -1,11 +1,13 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationRepository } from '../repository/organization.repository';
-import { CreateOrganizationDto, UpdateOrganizationDto } from '../interface/organization.dto';
+import { CreateOrganizationDto, RegisterInOrganizationNowDto, UpdateOrganizationDto } from '../interface/organization.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { EntityNotFoundException } from 'src/shared/error';
 import { randomBytes } from 'crypto';
+import { User } from 'src/shared/types/system.type';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class OrganizationService {
@@ -113,6 +115,40 @@ export class OrganizationService {
     );
 
     return result;
+  }
+
+  //
+
+  public async registerInOrganization(registerDto: RegisterInOrganizationNowDto, id: string, userSession: User) {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: registerDto.organization }
+    });
+
+    if (!org) throw new NotFoundException('Organización no encontrada');
+
+    const password = registerDto.password || 'abc.12345';
+    const hash = await bcrypt.hash(password, 10);
+
+    // Crear miembro
+    await this.prisma.organizationMember.create({
+      data: {
+        organization: { connect: { id: org.id } },
+        user: {
+          create: {
+            email: registerDto.email,
+            fullName: registerDto.fullName,
+            password: hash,
+            cyclistProfile: {
+              create: {
+                category: { connect: { id: registerDto.categoryId } }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return { success: true, orgName: org.name };
   }
 
   //

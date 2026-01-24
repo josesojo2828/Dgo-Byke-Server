@@ -18,12 +18,17 @@ export class RegisterDto {
     email: string;
 
     @IsString()
-    @MinLength(6)
-    password: string;
+    @IsOptional()
+    // @MinLength(6)
+    password?: string;
 
     @IsOptional()
     @IsString()
     organization?: string
+
+    @IsOptional()
+    @IsString()
+    category?: string
 }
 
 export interface IJwtPayload {

@@ -390,7 +390,7 @@ export class UserService {
     });
   }
 
-  async create(createDto: CreateUserDto, orgId?: string) {
+  async create(createDto: CreateUserDto, orgId?: string, categoryId?: string) {
     // Hash password if present
     if (createDto.password) {
       const salt = await bcrypt.genSalt();
@@ -425,7 +425,9 @@ export class UserService {
       fullName: createDto.fullName,
       isActive: true,
       roles: { create: { roleId: rolFound.id } },
-      cyclistProfile: { create: {} },
+      cyclistProfile: { create: {
+        category: { connect: { id: categoryId } }
+      } },
     };
 
 

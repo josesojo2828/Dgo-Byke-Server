@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Prisma } from '@prisma/client';
-import { IsString, IsNotEmpty, IsOptional, IsUrl } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsUrl, MinLength, IsEmail } from 'class-validator';
 
 export class CreateOrganizationDto {
   @IsString({ message: 'El nombre es obligatorio' })
@@ -14,6 +14,26 @@ export class CreateOrganizationDto {
   @IsOptional()
   @IsString()
   description?: string;
+}
+
+export class RegisterInOrganizationNowDto {
+    @IsString()
+    @MinLength(3)
+    fullName: string;
+
+    @IsEmail()
+    email: string;
+
+    @IsOptional()
+    @IsString()
+    password?: string;
+
+    @IsOptional()
+    @IsString()
+    organization?: string
+
+    @IsOptional()
+    categoryId?: string;
 }
 
 export class UpdateOrganizationDto extends PartialType(CreateOrganizationDto) { }

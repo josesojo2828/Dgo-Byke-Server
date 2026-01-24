@@ -8,13 +8,13 @@ import { SystemPermissions } from '../../iam/system-permissions';
 import { SessionAuthGuard } from 'src/modules/auth/guard/session-auth-guard';
 
 @Controller('categories')
-@UseGuards(SessionAuthGuard, PermissionsGuard)
 export class CategoryController {
   constructor(private readonly service: CategoryService) { }
 
   @Post('v1')
+  @UseGuards(SessionAuthGuard)
   @RequirePermissions(SystemPermissions.Categories.Create)
-  create(@Body() createDto: CreateCategoryDto) {  
+  create(@Body() createDto: CreateCategoryDto) {
     return this.service.create(createDto);
   }
 
@@ -30,12 +30,15 @@ export class CategoryController {
   }
 
   @Patch('v1/:id')
+  @UseGuards(SessionAuthGuard)
+
   @RequirePermissions(SystemPermissions.Categories.Update)
   update(@Param('id') id: string, @Body() updateDto: UpdateCategoryDto) {
     return this.service.update(id, updateDto);
   }
 
   @Delete('v1/:id')
+  @UseGuards(SessionAuthGuard)
   @RequirePermissions(SystemPermissions.Categories.Delete)
   remove(@Param('id') id: string) {
     return this.service.remove(id);

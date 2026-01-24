@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { SystemRole, User } from 'src/shared/types/system.type';
 import { DashboardService } from '../dashboard/service/dashboard.service';
 import { JWT_SECRET } from 'src/constant';
+import { CreateUserDto } from '../user/interface/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -79,6 +80,7 @@ export class AuthService {
 
     async register(registerDto: RegisterDto) {
         // 1. Create User (UserService handles hashing now)
+
         const user = await this.userService.create({
             email: registerDto.email,
             password: registerDto.password,
@@ -86,7 +88,8 @@ export class AuthService {
             isActive: true,
             // Force default role via Enum
             roleId: 'USER',
-        } as any, registerDto.organization); // Type cast quite safe now
+
+        } as any, registerDto.organization, registerDto.category); // Type cast quite safe now
 
         // Let's return the token immediately so they are logged in
         const payload: IJwtPayload = { email: user.email, sub: user.id };
