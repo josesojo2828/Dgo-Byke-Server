@@ -425,11 +425,16 @@ export class UserService {
       fullName: createDto.fullName,
       isActive: true,
       roles: { create: { roleId: rolFound.id } },
-      cyclistProfile: { create: {
-        category: { connect: { id: categoryId } }
-      } },
     };
 
+
+    if(categoryId) {
+      objectCreate.cyclistProfile = { create: {
+        category: { connect: { id: categoryId } }
+      } };
+    } else {
+      objectCreate.cyclistProfile = { create: {} };
+    }
 
     console.log('###########################');
     console.log(organization);
