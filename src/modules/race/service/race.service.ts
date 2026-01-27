@@ -1,7 +1,7 @@
 import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RaceRepository } from '../repository/race.repository';
-import { CreateRaceDto, UpdateRaceDto } from '../interface/race.dto';
+import { CreateRaceDto, TRaceCreate, UpdateRaceDto } from '../interface/race.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
 import { User } from 'src/shared/types/system.type';
 import { PrismaService } from 'src/shared/service/prisma.service'; // <--- NUEVO
@@ -73,27 +73,43 @@ export class RaceService {
     }
 
     // 3. Preparamos el payload final
-    const dataToCreate: any = {
-      ...restDto,
-      organizationId: targetOrgId, // <--- ID resuelto
-      creatorId: userSession.id,
-      status: 'BORRADOR',
+    let dataToCreate: TRaceCreate = {
+      // ...restDto,
+      name: createDto.name,
       date: new Date(createDto.date),
+      type: createDto.type,
+      // organizationId: targetOrgId, // <--- ID resuelto
+      // creatorId: userSession.id,
+      creator: { connect: { id: userSession.id } },
+      organization: { connect: { id: targetOrgId } },
+      track: { connect: { id: createDto.trackId } },
+      status: 'BORRADOR',
     };
 
-    // 4. Preparamos el input para Prisma (incluyendo conexión de categorías)
-    const prismaCreateInput: any = {
-      ...dataToCreate,
-    };
+    // // 4. Preparamos el input para Prisma (incluyendo conexión de categorías)
+    // const prismaCreateInput: any = {
+    //   ...dataToCreate,
+    // };
 
     if (categoryIds && categoryIds.length > 0) {
-      prismaCreateInput.categories = {
-        connect: categoryIds.map(id => ({ id }))
-      };
+      for (let i = 0; i < categoryIds.length; i++) {
+        const element = categoryIds[i];
+
+        dataToCreate = {
+          ...dataToCreate,
+          listCategories: {
+            create: {
+              category: { connect: { id: element.id } },
+              laps: element.lap
+            }
+          }
+        }
+
+      }
     }
 
     // 5. Llamada al Repo
-    const result = await this.repository.createWithRelations(prismaCreateInput);
+    const result = await this.repository.createWithRelations(dataToCreate);
 
     // 6. Post-Event
     this.eventEmitter.emit('race:post:create', new DomainEvent({

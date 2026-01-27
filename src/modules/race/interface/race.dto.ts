@@ -24,8 +24,8 @@ export class CreateRaceDto {
   // --- NUEVO: Array de IDs de categorías para asignarlas de una vez ---
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true })
-  categoryIds?: string[];
+  // @IsUUID('4', { each: true })
+  categoryIds?: {  id: string, lap: number }[];
 
   // Opcionales configuración
   @IsOptional()

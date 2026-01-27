@@ -296,8 +296,8 @@ model Category {
   // Relaciones
   ciclists CyclistProfile[]
   organizations OrganizationMember[]
-
   categories CyclistProfileCategory[]
+  listCategories RaceCategory[]
 
   // Auditoría
   metadata  Json?     @db.JsonB // Configuración específica de la org
@@ -308,6 +308,22 @@ model Category {
   similarFrom Category[] @relation("CategorySimilarity")
 
   races Race[] @relation("RaceCategories") // Relación N:M explícita o implícita
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model RaceCategory {
+  id String @id @default(uuid())
+
+  raceId String
+  race   Race   @relation(fields: [raceId], references: [id], onDelete: Cascade)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  laps       Int?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -339,6 +355,8 @@ model Race {
 
   // Categorías habilitadas para esta carrera
   categories Category[] @relation("RaceCategories")
+
+  listCategories RaceCategory[]
 
   // Participantes e Historial en vivo
   // Participantes e Historial en vivo

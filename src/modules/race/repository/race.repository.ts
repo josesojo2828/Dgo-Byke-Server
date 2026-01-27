@@ -101,7 +101,7 @@ export class RaceRepository {
     };
   }
 
-  async createWithRelations(data: Prisma.RaceCreateInput) {
+  async createWithRelations(data: TRaceCreate) {
     return this.prisma.race.create({ data });
   }
 

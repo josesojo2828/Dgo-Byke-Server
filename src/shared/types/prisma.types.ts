@@ -147,6 +147,13 @@ export const TRaceListInclude: Prisma.RaceInclude = {
             }
         }
     },
+    listCategories: {
+        include: {
+            category: {
+                include: TCategoryDetailInclude
+            }
+        }
+    },
     track: { select: { name: true, distanceKm: true } }, // Info técnica rápida
     _count: {
         select: { participants: true, categories: true }
@@ -175,7 +182,14 @@ export const TRaceDetailInclude: Prisma.RaceInclude = {
     creator: { select: { fullName: true } },
     _count: {
         select: { participants: true, liveEvents: true }
-    }
+    },
+    listCategories: {
+        include: {
+            category: {
+                include: TCategoryDetailInclude
+            }
+        }
+    },
 };
 
 // =============================================================================
