@@ -6,11 +6,15 @@ import { PermissionsGuard } from '../../../shared/guards/permissions.guard';
 import { RequirePermissions } from '../../../shared/decorators/permissions.decorator';
 import { SystemPermissions } from '../../iam/system-permissions';
 import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
+import { CyclistProfileService } from '../service/cyclist-profile.service';
 
 @Controller('users')
 @UseGuards(SessionAuthGuard, PermissionsGuard)
 export class UserController {
-  constructor(private readonly service: UserService) { }
+  constructor(
+    private readonly service: UserService,
+    private readonly cyclistService: CyclistProfileService
+  ) { }
 
   @Get('v1/cyclist/my-organization')
   async getMyOrganization(@CurrentUser() user: any) {
@@ -110,5 +114,16 @@ export class UserController {
   @RequirePermissions(SystemPermissions.Users.Read)
   getDashboardOverview() {
     return this.service.getDashboardStats();
+  }
+
+  // /users/v1/setcategory/:id
+  @Patch('v1/setcategory/:id')
+  setCategory(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.cyclistService.setCategory(user.id, id);
+  }
+
+  @Delete('v1/removecategory/:id')
+  removeCategory(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.cyclistService.removeCategory(id);
   }
 }

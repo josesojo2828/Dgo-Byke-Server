@@ -178,7 +178,15 @@ export class UserService {
         fullName: true,
         phone: true,
         avatarUrl: true,
-        cyclistProfile: true,
+        cyclistProfile: {
+          include: {
+            categories: {
+              include: {
+                category: true
+              }
+            }
+          }
+        },
       },
     });
   }

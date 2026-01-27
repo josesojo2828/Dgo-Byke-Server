@@ -132,5 +132,4 @@ export class DashboardService {
         // Si requiere permiso, verifica si está en el Set del usuario
         return userPermissions.has(requiredPermission);
     }
-
 }

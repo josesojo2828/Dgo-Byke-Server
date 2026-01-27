@@ -6,6 +6,50 @@ import { CreateCyclistProfileDto } from '../interface/ciclist.dto';
 export class CyclistProfileService {
     constructor(private readonly prisma: PrismaService) { }
 
+    async setCategory(userId: string, categoryId: string) {
+        const profile = await this.prisma.cyclistProfile.findUnique({
+            where: { userId },
+        });
+
+        if (!profile) {
+            throw new NotFoundException('Perfil no encontrado');
+        }
+
+        const found = await this.prisma.cyclistProfileCategory.findFirst({
+            where: {
+                AND: [
+                    { id: profile.id },
+                    { category: { id: categoryId } },
+                ]
+            }
+        });
+
+        if (found) {
+            throw new BadRequestException('Este ciclista ya tiene este category');
+        }
+
+        await this.prisma.cyclistProfileCategory.create({
+            data: {
+                category: { connect: { id: categoryId } },
+                cyclistProfile: { connect: { id: profile.id } }
+            },
+        });
+    }
+
+    async removeCategory(id: string) {
+        const found = await this.prisma.cyclistProfileCategory.findFirst({
+            where: { id: id }
+        });
+
+        if(!found) {
+            throw new NotFoundException('Category not found');
+        }
+
+        await this.prisma.cyclistProfileCategory.delete({
+            where: { id: id }
+        });
+    }
+
     /**
      * Crea o actualiza el perfil.
      * Usamos upsert para manejar la lógica de "Crear si no existe, actualizar si existe"

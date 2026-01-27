@@ -43,4 +43,10 @@ export class CategoryController {
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
+
+  @Get('migrate')
+  async migrate() {
+    const entity = await this.service.migrateCategory();
+    return entity;
+  }
 }

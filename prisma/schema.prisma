@@ -115,6 +115,20 @@ model User {
   managedRaces Race[]     @relation("RaceManager") // Carreras creadas por este usuario
 }
 
+model CyclistProfileCategory {
+  id String @id @default(uuid())
+
+  cyclistProfileId String
+  cyclistProfile   CyclistProfile @relation(fields: [cyclistProfileId], references: [id], onDelete: Cascade)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
 /// Detalles específicos del ciclista (salud, medidas, bici)
 model CyclistProfile {
   id     String @id @default(uuid())
@@ -131,6 +145,9 @@ model CyclistProfile {
   allergies             String?
   emergencyContactName  String? // Coincide con el form
   emergencyContactPhone String? // Coincide con el form
+
+  // Relaciones
+  categories CyclistProfileCategory[]
 
   // Categoria
   categoryId String?
@@ -278,6 +295,12 @@ model Category {
 
   // Relaciones
   ciclists CyclistProfile[]
+  organizations OrganizationMember[]
+
+  categories CyclistProfileCategory[]
+
+  // Auditoría
+  metadata  Json?     @db.JsonB // Configuración específica de la org
 
   // Relación de "Similitud" (Many-to-Many self relation)
   // Permite agrupar categorías que pueden correr juntas (Ej: Master A y B)
@@ -409,6 +432,9 @@ model OrganizationMember {
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
 
   position String? // "Presidente", "Vicepresidente", etc.
   role     OrgRole @default(MEMBER)

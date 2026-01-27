@@ -171,8 +171,6 @@ export class PublicService {
       data,
     }
 
-    console.log(entity); 
-
     return entity;
   }
 

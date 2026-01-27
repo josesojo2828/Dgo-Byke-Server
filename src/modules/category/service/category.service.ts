@@ -3,12 +3,17 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CategoryRepository } from '../repository/category.repository';
 import { CreateCategoryDto, TCategoryCreate, UpdateCategoryDto } from '../interface/category.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
+import { PrismaService } from 'src/shared/service/prisma.service';
+import { connect } from 'http2';
+import { LoggerService } from 'src/shared/logger/logger.service';
 
 @Injectable()
 export class CategoryService {
   constructor(
     private readonly repository: CategoryRepository,
-    private readonly eventEmitter: EventEmitter2
+    private readonly eventEmitter: EventEmitter2,
+    private readonly prisma: PrismaService,
+    private readonly logger: LoggerService
   ) { }
 
   async create(createDto: CreateCategoryDto) {
@@ -106,4 +111,37 @@ export class CategoryService {
 
     return result;
   }
+
+  async migrateCategory() {
+    // const categories = await this.prisma.category.findMany();
+
+    this.logger.logInfo('Migrating categories');
+
+    const profiles = await this.prisma.cyclistProfile.findMany({
+      include: {
+        categories: true
+      }
+    });
+
+    this.logger.logInfo(`Perfiles: ${profiles.length}`);
+
+    for (let i = 0; i < profiles.length; i++) {
+      const profile = profiles[i];
+      if (!profile.categoryId) return;
+
+      const categoryId = profile.categoryId;
+
+      this.logger.logInfo(`Perfil: ${profile.id} Category: ${categoryId}`);
+
+      await this.prisma.cyclistProfileCategory.create({
+        data: {
+          category: { connect: { id: categoryId } },
+          cyclistProfile: { connect: { id: profile.id } }
+        }
+      });
+    }
+
+    this.logger.logInfo('Migration complete');
+  }
+
 }
