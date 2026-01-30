@@ -115,6 +115,8 @@ export class CategoryService {
   async migrateCategory() {
     // const categories = await this.prisma.category.findMany();
 
+    const objectResposne: any[] = [];
+
     this.logger.logInfo('Migrating categories');
 
     const profiles = await this.prisma.cyclistProfile.findMany({
@@ -123,17 +125,22 @@ export class CategoryService {
       }
     });
 
+    objectResposne.push(profiles);
+
     this.logger.logInfo(`Perfiles: ${profiles.length}`);
 
     const categoryPromises: any = [];
 
     for (let i = 0; i < profiles.length; i++) {
       const profile = profiles[i];
+
       if (!profile.categoryId) return;
 
       const categoryId = profile.categoryId;
 
       this.logger.logInfo(`Perfil: ${profile.id} Category: ${categoryId}`);
+
+      console.log()
 
       categoryPromises.push(
         this.prisma.cyclistProfileCategory.create({
