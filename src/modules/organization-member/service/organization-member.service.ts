@@ -148,4 +148,19 @@ export class OrganizationMemberService {
 
         return result;
     }
+
+    async updateIndex (id: string, indexx: number) {
+        const found = await this.prisma.cyclistProfile.findFirst({ where:{id} });
+
+        if(!found) {
+            throw new BadRequestException('Category not found');
+        }
+
+        const ciclist = await this.prisma.cyclistProfile.update({
+            where: { id },
+            data: { index: indexx }
+        });
+
+        return ciclist;
+    }
 }

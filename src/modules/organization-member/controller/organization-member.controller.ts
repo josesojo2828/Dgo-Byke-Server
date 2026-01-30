@@ -42,7 +42,7 @@ export class OrganizationMemberController {
     }
 
     @Patch('v1/:id')
-    @RequirePermissions(SystemPermissions.OrganizationMembers.Update)
+    // @RequirePermissions(SystemPermissions.OrganizationMembers.Update)
     update(@Param('id') id: string, @Body() updateDto: UpdateOrganizationMemberDto) {
         return this.service.update(id, updateDto);
     }
@@ -51,5 +51,11 @@ export class OrganizationMemberController {
     @RequirePermissions(SystemPermissions.OrganizationMembers.Delete)
     remove(@Param('id') id: string) {
         return this.service.remove(id);
+    }
+
+    // ID is CiclistProfileId
+    @Patch('/v1/:id/index')
+    updateIndex(@Param('id') id: string, @Body() updateDto: { index: number }) {
+        return this.service.updateIndex(id, updateDto.index);
     }
 }

@@ -135,6 +135,8 @@ model CyclistProfile {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  index         Int      @default(0)
+
   // Datos Biométricos (Los sacamos del JSON para mejor tipado)
   weight     Float? // en kg
   height     Float? // en cm (o int si prefieres)
