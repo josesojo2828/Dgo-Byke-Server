@@ -140,8 +140,6 @@ export class CategoryService {
 
       this.logger.logInfo(`Perfil: ${profile.id} Category: ${categoryId}`);
 
-      console.log()
-
       categoryPromises.push(
         this.prisma.cyclistProfileCategory.create({
           data: {
@@ -153,12 +151,8 @@ export class CategoryService {
     }
 
     const response = await Promise.all(categoryPromises);
-
     console.log(response);
-
     this.logger.logInfo('Migration complete');
-
     return objectResposne;
   }
-
 }

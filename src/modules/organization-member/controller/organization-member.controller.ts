@@ -18,9 +18,18 @@ export class OrganizationMemberController {
     // No requiere permiso global de sistema, el servicio valida la autoría
     findMyMembers(
         @CurrentUser() user: any,
-        @Query('search') search?: string
+        @Query() query?: any
     ) {
-        return this.service.findAllByOrganizer(user.id, search);
+        return this.service.findAllByOrganizer(user.id, query.ignore, query.search ? query.search : '');
+    }
+
+    @Get('v1/me/members/forrace')
+    // No requiere permiso global de sistema, el servicio valida la autoría
+    findMyMembersForRace(
+        @CurrentUser() user: any,
+        @Query() query: { search?: string, ignore?: string, raceId: string }
+    ) {
+        return this.service.findAllByOrganizerByRace(user.id, query);
     }
 
     @Post('v1')

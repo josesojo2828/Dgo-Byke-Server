@@ -7,6 +7,7 @@ import { UserService } from 'src/modules/user/service/user.service';
 import { BusinessLogicException } from 'src/shared/error';
 import { PrismaService } from 'src/shared/service/prisma.service';
 import { User } from 'src/shared/types/system.type';
+import { LoggerService } from 'src/shared/logger/logger.service';
 
 @Injectable()
 export class ParticipantService {
@@ -14,10 +15,11 @@ export class ParticipantService {
     private readonly repository: ParticipantRepository,
     private readonly userService: UserService,
     private readonly prisma: PrismaService,
-    private readonly eventEmitter: EventEmitter2
+    private readonly eventEmitter: EventEmitter2,
+    private readonly logger: LoggerService
   ) { }
 
-  async create(createDto: CreateParticipantDto, user: User) {
+  async create(createDto: CreateParticipantDto, user: User, session?: boolean) {
     // 1. Pre-Event
     this.eventEmitter.emit(
       'participant:pre:create',
@@ -28,11 +30,20 @@ export class ParticipantService {
       }),
     );
 
-    // verificar si el ciclista ya tiene un perfil
-    const profile = await this.prisma.cyclistProfile.findFirst({ where: { userId: user.id } });
-    if (!profile) throw new BusinessLogicException('Debes crear un perfil de ciclista primero');
+    let userId = user.id;
 
-    console.log(profile, createDto, user.id);
+    if(!session) {
+      const found = await this.prisma.user.findFirst({ where: { cyclistProfile: { id: createDto.profileId } } });
+      // if(!found) throw new BusinessLogicException('El ciclista no existe');
+      if(found) {
+        userId = found.id;
+        this.logger.logDebug('UserId getting from profileId', createDto.profileId);
+      }
+    }
+
+    // verificar si el ciclista ya tiene un perfil
+    const profile = await this.prisma.cyclistProfile.findFirst({ where: { userId } });
+    if (!profile) throw new BusinessLogicException('Debes crear un perfil de ciclista primero');
 
     const found = await this.repository.findFirst({ profileId: profile.id, raceId: createDto.raceId });
     if (found) throw new BusinessLogicException('El ciclista ya tiene un perfil asociado a esta carrera');

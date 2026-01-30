@@ -2,7 +2,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrganizationMemberRepository } from '../repository/organization-member.repository';
-import { CreateOrganizationMemberDto, UpdateOrganizationMemberDto } from '../interface/organization-member.dto';
+import { CreateOrganizationMemberDto, TOrganizationMemberWhere, UpdateOrganizationMemberDto } from '../interface/organization-member.dto';
 import { DomainEvent } from 'src/shared/event/domain-listener';
 import { PrismaService } from 'src/shared/service/prisma.service';
 
@@ -15,7 +15,7 @@ export class OrganizationMemberService {
     ) { }
 
     // Método específico para la vista del Organizador
-    async findAllByOrganizer(userId: string, search?: string) {
+    async findAllByOrganizer(userId: string, ignore: string, search?: string) {
         // 1. Identificar la organización del usuario logueado
         const membership = await this.prisma.organizationMember.findFirst({
             where: {
@@ -39,6 +39,48 @@ export class OrganizationMemberService {
                 OR: [
                     { fullName: { contains: search, mode: 'insensitive' } },
                     { email: { contains: search, mode: 'insensitive' } }
+                ]
+            };
+        }
+
+        // 3. Consultar miembros incluyendo datos del usuario
+        return this.repository.findAll({
+            where,
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async findAllByOrganizerByRace(userId: string, query: { search?: string, ignore?: string, raceId?: string }) {
+        // 1. Identificar la organización del usuario logueado
+        const membership = await this.prisma.organizationMember.findFirst({
+            where: {
+                userId,
+                role: { in: ['OWNER', 'ADMIN'] }
+            }
+        });
+
+        if (!membership) {
+            throw new ForbiddenException('No tienes una organización asociada.');
+        }
+
+        // 2. Construir filtro de búsqueda si existe
+        const where: TOrganizationMemberWhere = {
+            organizationId: membership.organizationId,
+            deletedAt: null,
+            user: {
+                cyclistProfile: {
+                    participations: {
+                        none: { raceId: query.raceId }
+                    }
+                }
+            }
+        };
+
+        if (query && query.search) {
+            where.user = {
+                OR: [
+                    { fullName: { contains: query.search, mode: 'insensitive' } },
+                    { email: { contains: query.search, mode: 'insensitive' } }
                 ]
             };
         }
