@@ -125,6 +125,8 @@ export class CategoryService {
 
     this.logger.logInfo(`Perfiles: ${profiles.length}`);
 
+    const categoryPromises: any = [];
+
     for (let i = 0; i < profiles.length; i++) {
       const profile = profiles[i];
       if (!profile.categoryId) return;
@@ -133,13 +135,19 @@ export class CategoryService {
 
       this.logger.logInfo(`Perfil: ${profile.id} Category: ${categoryId}`);
 
-      await this.prisma.cyclistProfileCategory.create({
-        data: {
-          category: { connect: { id: categoryId } },
-          cyclistProfile: { connect: { id: profile.id } }
-        }
-      });
+      categoryPromises.push(
+        this.prisma.cyclistProfileCategory.create({
+          data: {
+            category: { connect: { id: categoryId } },
+            cyclistProfile: { connect: { id: profile.id } }
+          }
+        })
+      )
     }
+
+    const response = await Promise.all(categoryPromises);
+
+    console.log(response);
 
     this.logger.logInfo('Migration complete');
   }
