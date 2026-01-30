@@ -5,6 +5,7 @@ import { CreateRaceDto, TRaceCreate, UpdateRaceDto } from '../interface/race.dto
 import { DomainEvent } from 'src/shared/event/domain-listener';
 import { User } from 'src/shared/types/system.type';
 import { PrismaService } from 'src/shared/service/prisma.service'; // <--- NUEVO
+import { ca } from 'date-fns/locale';
 
 @Injectable()
 export class RaceService {
@@ -50,14 +51,9 @@ export class RaceService {
   // CREAR CARRERA (Con lógica de Organización Automática)
   // ============================================================
   async create(createDto: CreateRaceDto, userSession: User) {
-    // 1. Extraemos datos clave
-    // Sacamos categoryIds y organizationId del objeto principal
     const { categoryIds, organizationId, ...restDto } = createDto;
-
     let targetOrgId = organizationId;
 
-    // 2. Lógica de Asignación de Organización
-    // Si no viene organizationId (es un Organizador creando su carrera), lo buscamos.
     if (!targetOrgId) {
       const membership = await this.prisma.organizationMember.findFirst({
         where: {
@@ -72,41 +68,47 @@ export class RaceService {
       targetOrgId = membership.organizationId;
     }
 
-    // 3. Preparamos el payload final
     let dataToCreate: TRaceCreate = {
-      // ...restDto,
       name: createDto.name,
       date: new Date(createDto.date),
       type: createDto.type,
-      // organizationId: targetOrgId, // <--- ID resuelto
-      // creatorId: userSession.id,
       creator: { connect: { id: userSession.id } },
       organization: { connect: { id: targetOrgId } },
       track: { connect: { id: createDto.trackId } },
-      status: 'BORRADOR',
+      status: 'PROGRAMADA',
     };
 
-    // // 4. Preparamos el input para Prisma (incluyendo conexión de categorías)
-    // const prismaCreateInput: any = {
-    //   ...dataToCreate,
-    // };
 
     if (categoryIds && categoryIds.length > 0) {
-      for (let i = 0; i < categoryIds.length; i++) {
-        const element = categoryIds[i];
-
-        dataToCreate = {
-          ...dataToCreate,
-          listCategories: {
-            create: {
-              category: { connect: { id: element.id } },
-              laps: element.lap
-            }
+      dataToCreate = {
+        ...dataToCreate,
+        listCategories: {
+          createMany: {
+            skipDuplicates: true,
+            data: categoryIds.map(ct => ({ categoryId: ct.id, laps: ct.lap }))
           }
         }
-
       }
     }
+
+    console.log(dataToCreate);
+    
+    // if (categoryIds && categoryIds.length > 0) {
+    //   for (let i = 0; i < categoryIds.length; i++) {
+    //     const element = categoryIds[i];
+
+    //     dataToCreate = {
+    //       ...dataToCreate,
+    //       listCategories: {
+    //         create: {
+    //           category: { connect: { id: element.id } },
+    //           laps: element.lap
+    //         }
+    //       }
+    //     }
+
+    //   }
+    // }
 
     // 5. Llamada al Repo
     const result = await this.repository.createWithRelations(dataToCreate);
@@ -143,7 +145,6 @@ export class RaceService {
   // ============================================================
   // MÉTODOS ESTÁNDAR (Sin cambios funcionales)
   // ============================================================
-
   async findAll(params: { organizationId?: string }) {
     return this.repository.findAll({
       // where: { organizationId: params.organizationId },

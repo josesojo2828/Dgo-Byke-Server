@@ -20,6 +20,7 @@ export class AuthController {
 
     @Post('register')
     async register(@Body() registerDto: RegisterDto) {
+        console.log(registerDto);
         registerDto.password = registerDto.password || 'abc.12345';
         return this.authService.register(registerDto);
     }

@@ -242,7 +242,7 @@ export const TRaceEventDefaultInclude: Prisma.RaceEventInclude = {
 export type TOrganizationMemberInclude = Prisma.OrganizationMemberInclude;
 
 export const TOrganizationMemberListInclude: Prisma.OrganizationMemberInclude = {
-    user: { select: { fullName: true, email: true, avatarUrl: true, cyclistProfile: { include: { category: true, _count: true } } } },
+    user: { select: { fullName: true, email: true, avatarUrl: true, cyclistProfile: { include: { category: true, _count: true, categories: { include:{ category: true } } } } } },
     organization: { select: { name: true } }
 };
 
