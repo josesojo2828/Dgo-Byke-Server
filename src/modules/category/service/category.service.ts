@@ -157,6 +157,8 @@ export class CategoryService {
     console.log(response);
 
     this.logger.logInfo('Migration complete');
+
+    return objectResposne;
   }
 
 }
