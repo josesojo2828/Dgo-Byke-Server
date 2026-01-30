@@ -55,7 +55,20 @@ export class OrganizationMemberController {
 
     // ID is CiclistProfileId
     @Patch('/v1/:id/index')
-    updateIndex(@Param('id') id: string, @Body() updateDto: { index: number }) {
-        return this.service.updateIndex(id, updateDto.index);
+    async updateIndex(@Param('id') id: string, @Body() updateDto: { index: number }) {
+        const entity = this.service.updateIndex(id, updateDto.index);
+        return entity;
+    }
+
+    @Patch('/v1/:id/category/add')
+    async updateCategoryAdd(@Param('id') id: string, @Body() updateDto: { categoryId: string }) {
+        const entity = await this.service.addCategory(id, updateDto.categoryId);
+        return entity;
+    }
+
+    @Patch('/v1/:id/category/remove')
+    async updateCategoryRemove(@Param('id') id: string, @Body() updateDto: { categoryId: string }) {
+        const entity = await this.service.removeCategory(id, updateDto.categoryId);
+        return entity;
     }
 }

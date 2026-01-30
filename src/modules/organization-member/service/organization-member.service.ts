@@ -149,10 +149,10 @@ export class OrganizationMemberService {
         return result;
     }
 
-    async updateIndex (id: string, indexx: number) {
-        const found = await this.prisma.cyclistProfile.findFirst({ where:{id} });
+    async updateIndex(id: string, indexx: number) {
+        const found = await this.prisma.cyclistProfile.findFirst({ where: { id } });
 
-        if(!found) {
+        if (!found) {
             throw new BadRequestException('Category not found');
         }
 
@@ -161,6 +161,58 @@ export class OrganizationMemberService {
             data: { index: indexx }
         });
 
+        return ciclist;
+    }
+
+    async addCategory(id: string, catId: string) {
+        const found = await this.prisma.cyclistProfile.findFirst({ where: { id } });
+
+        if (!found) {
+            throw new BadRequestException('Profile not found');
+        }
+
+        const categryFound = await this.prisma.category.findFirst({ where: { id: catId } });
+
+        if (!categryFound) {
+            throw new BadRequestException('Category not found');
+        }
+
+        const profileInCategory = await this.prisma.cyclistProfileCategory.findFirst({
+            where: { cyclistProfileId: id, categoryId: catId }
+        })
+
+        if (profileInCategory) {
+            throw new BadRequestException('Profile already in category');
+        }
+
+        const ciclist = await this.prisma.cyclistProfile.update({
+            where: { id },
+            data: {
+                categories: {
+                    create: {
+                        category: { connect: { id: catId } },
+                    }
+                }
+            }
+        });
+
+        return ciclist;
+    }
+
+    async removeCategory(id: string, catId: string) {
+        const found = await this.prisma.cyclistProfile.findFirst({ where: { id } });
+        if (!found) throw new BadRequestException('Profile not found');
+
+        // const categryFound = await this.prisma.category.findFirst({ where: { id: catId } });
+        // if (!categryFound) throw new BadRequestException('Category not found');
+
+        const profileInCategory = await this.prisma.cyclistProfileCategory.findFirst({
+            where: { cyclistProfileId: id, categoryId: catId }
+        })
+
+        if (profileInCategory) throw new BadRequestException('Profile already in category');
+
+        const ciclist = await this.prisma.cyclistProfileCategory.delete({ where: { id: catId } });
         return ciclist;
     }
 }
