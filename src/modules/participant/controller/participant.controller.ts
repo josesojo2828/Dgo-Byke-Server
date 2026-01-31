@@ -8,16 +8,17 @@ import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import type { User } from 'src/shared/types/system.type';
 
 @Controller('participants')
-@UseGuards(SessionAuthGuard)
 export class ParticipantController {
   constructor(private readonly service: ParticipantService) { }
 
   @Post('v1')
+  @UseGuards(SessionAuthGuard)
   create(@Body() createDto: CreateParticipantDto, @CurrentUser() user: User) {
     return this.service.create(createDto, user, true);
   }
 
   @Post('v1/org')
+  @UseGuards(SessionAuthGuard)
   createByOrg(@Body() createDto: CreateParticipantDto, @CurrentUser() user: User) {
     return this.service.create(createDto, user, false);
   }
@@ -37,12 +38,14 @@ export class ParticipantController {
   }
 
   @Patch('v1/:id')
+  @UseGuards(SessionAuthGuard)
   @RequirePermissions(SystemPermissions.Participants.Update)
   update(@Param('id') id: string, @Body() updateDto: UpdateParticipantDto) {
     return this.service.update(id, updateDto);
   }
 
   @Delete('v1/:id')
+  @UseGuards(SessionAuthGuard)
   @RequirePermissions(SystemPermissions.Participants.Delete)
   remove(@Param('id') id: string) {
     return this.service.remove(id);
