@@ -142,8 +142,13 @@ export const TRaceListInclude: Prisma.RaceInclude = {
         include: {
             profile: {
                 include: {
-                    user: true
-                }
+                    user: true,
+                    categories: {
+                        include: {
+                            category: true
+                        }
+                    }
+                },
             }
         }
     },
