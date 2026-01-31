@@ -28,10 +28,6 @@ export class SessionAuthGuard implements CanActivate {
 
         const request = context.switchToHttp().getRequest<FastifyRequest>();
         const response = context.switchToHttp().getResponse<FastifyReply>();
-
-        // ---------------------------------------------------------
-        // ESTRATEGIA A: ¿Es una petición API con Token? (Bearer)
-        // ---------------------------------------------------------
         const authHeader = request.headers.authorization;
 
         if (authHeader && authHeader.startsWith('Bearer ')) {
